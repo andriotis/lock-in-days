@@ -11,7 +11,8 @@ than a branded app.
 
 1. **Countdown** — days remaining in your lock-in period, with a progress bar
    and simple stats. Set the period by picking start/end dates or just typing
-   the number of days — all three stay in sync.
+   the number of days — all three stay in sync. Includes a **daily quote** from
+   philosophy, psychology, and the arts that changes each day.
 2. **Progress photos** — take consistent gym/progress shots using a **ghost
    overlay** of your last photo so pose, position, and distance line up every
    time. Includes a rule-of-thirds grid, a date stamp, a gallery, and a
@@ -84,6 +85,7 @@ src/
     db.ts                 IndexedDB storage (incl. wallpaper) + backup/restore
     dates.ts              local-day helpers
     image.ts              downscale picked photos before storing
+    quotes.ts             daily motivational quote set + day picker
   components/
     Countdown.tsx         days-remaining screen
     PhotoCapture.tsx      camera, ghost overlay, gallery, slideshow

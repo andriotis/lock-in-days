@@ -93,39 +93,45 @@ body {
   padding-top: var(--safe-top);
 }
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px 10px 18px;
+.settings-fab {
+  position: fixed;
+  top: calc(12px + var(--safe-top));
+  right: max(14px, calc(50vw - 360px + 14px));
+  z-index: 40;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
   background: rgba(20, 21, 26, 0.5);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  border-bottom: 1px solid var(--hairline);
-}
-
-.brand {
+  color: var(--text);
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  font-size: 17px;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.08s, background 0.15s;
 }
 
-.brand .logo {
+.settings-fab:active {
+  transform: scale(0.92);
+}
+
+.settings-fab svg {
   width: 22px;
   height: 22px;
-  opacity: 0.95;
 }
 
 .screen {
   flex: 1;
-  padding: 14px 16px 108px;
+  padding: 16px 16px 108px;
   animation: fade 0.2s ease;
+}
+
+/* Reserve room on the right of a screen's header row so its action button
+   (e.g. Habits "Edit") never sits under the floating settings button. */
+.screen-head {
+  padding-right: 48px;
 }
 
 @keyframes fade {
@@ -545,6 +551,47 @@ label.field > span {
 
 .stat span {
   font-size: 12px;
+  color: var(--muted);
+}
+
+/* Daily quote ------------------------------------------------------------- */
+
+.quote {
+  margin-top: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.quote-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.quote-mark {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 52px;
+  line-height: 0.4;
+  color: var(--hairline-strong);
+  height: 22px;
+}
+
+.quote blockquote {
+  margin: 8px 0 12px;
+  font-size: 19px;
+  line-height: 1.45;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  /* A touch of serif gives it a literary, unhurried feel */
+  font-family: Georgia, "Times New Roman", "SF Pro Text", serif;
+}
+
+.quote cite {
+  display: block;
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--muted);
 }
 

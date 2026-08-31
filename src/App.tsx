@@ -100,19 +100,13 @@ export default function App() {
         />
       ) : (
         <>
-          <header className="topbar">
-            <span className="brand">
-              <img className="logo" src="./icon.svg" alt="" /> Lock In
-            </span>
-            <button
-              className="icon-btn"
-              onClick={() => setSettingsOpen(true)}
-              aria-label="Settings"
-              style={{ width: 42, height: 42 }}
-            >
-              <IconGear />
-            </button>
-          </header>
+          <button
+            className="settings-fab"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Settings"
+          >
+            <IconGear />
+          </button>
 
           {tab === "countdown" && (
             <Countdown config={config} photoCount={photos.length} loggedDays={loggedDays} />

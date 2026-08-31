@@ -1,5 +1,6 @@
 import type { Config } from "../lib/db";
 import { daysBetween, fromDayKey, prettyDate, todayKey } from "../lib/dates";
+import { quoteForDay } from "../lib/quotes";
 
 export default function Countdown({
   config,
@@ -82,6 +83,22 @@ export default function Countdown({
             : "Your countdown is set. Show up on day one."}
         </p>
       </div>
+
+      <DailyQuote />
+    </div>
+  );
+}
+
+function DailyQuote() {
+  const q = quoteForDay(todayKey());
+  return (
+    <div className="card quote">
+      <div className="quote-head">
+        <span className="quote-mark">“</span>
+        <span className="pill">Daily · {q.tag}</span>
+      </div>
+      <blockquote>{q.text}</blockquote>
+      <cite>— {q.author}</cite>
     </div>
   );
 }
