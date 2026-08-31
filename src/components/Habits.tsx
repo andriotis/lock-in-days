@@ -212,7 +212,7 @@ function HabitHeatmap({
   const possible = weeks.flat().filter((c) => c.inRange && !c.future).length;
 
   return (
-    <div className="habit-block">
+    <div className="card habit-block">
       <div className="habit-head">
         <span className="name">
           <span className="dot-swatch" style={{ background: habit.color }} />

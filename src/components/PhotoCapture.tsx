@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Photo } from "../lib/db";
 import { deletePhoto, putPhoto } from "../lib/db";
 import { shortDate, todayKey } from "../lib/dates";
-import { IconCamera, IconFlip, IconPlay, IconTrash } from "./icons";
+import { IconCamera, IconPlay, IconTrash } from "./icons";
 
 const TARGET_W = 1080;
 const TARGET_H = 1440; // 3:4 portrait — a consistent frame for the compilation
@@ -18,11 +18,9 @@ export default function PhotoCapture({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [facing, setFacing] = useState<"user" | "environment">("environment");
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ghost, setGhost] = useState(0.4); // ghost overlay opacity
-  const [showGrid, setShowGrid] = useState(true);
   const [slideshow, setSlideshow] = useState(false);
 
   // Newest photo becomes the alignment ghost for the next shot.
@@ -41,7 +39,8 @@ export default function PhotoCapture({
     stop();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing, width: { ideal: 1080 }, height: { ideal: 1440 } },
+        // Selfie (front) camera only.
+        video: { facingMode: "user", width: { ideal: 1080 }, height: { ideal: 1440 } },
         audio: false,
       });
       streamRef.current = stream;
@@ -68,7 +67,7 @@ export default function PhotoCapture({
     start();
     return stop;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [facing]);
+  }, []);
 
   async function capture() {
     const v = videoRef.current;
@@ -135,19 +134,6 @@ export default function PhotoCapture({
           />
         )}
 
-        {showGrid && (
-          <svg className="cam-grid" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <g stroke="rgba(255,255,255,0.28)" strokeWidth="0.4">
-              <line x1="33.3" y1="0" x2="33.3" y2="100" />
-              <line x1="66.6" y1="0" x2="66.6" y2="100" />
-              <line x1="0" y1="33.3" x2="100" y2="33.3" />
-              <line x1="0" y1="66.6" x2="100" y2="66.6" />
-            </g>
-            <line x1="50" y1="46" x2="50" y2="54" stroke="rgba(34,211,238,0.9)" strokeWidth="0.6" />
-            <line x1="46" y1="50" x2="54" y2="50" stroke="rgba(34,211,238,0.9)" strokeWidth="0.6" />
-          </svg>
-        )}
-
         <div className="cam-badge">
           <span className="cam-tag">{shortDate(todayKey())}</span>
           {lastPhoto && <span className="cam-tag">👻 ghost on</span>}
@@ -171,22 +157,7 @@ export default function PhotoCapture({
       )}
 
       <div className="cam-controls">
-        <button
-          className="icon-btn"
-          onClick={() => setShowGrid((g) => !g)}
-          title="Toggle grid"
-          style={{ opacity: showGrid ? 1 : 0.5 }}
-        >
-          #
-        </button>
         <button className="shutter" onClick={capture} disabled={!ready} aria-label="Capture" />
-        <button
-          className="icon-btn"
-          onClick={() => setFacing((f) => (f === "user" ? "environment" : "user"))}
-          title="Flip camera"
-        >
-          <IconFlip />
-        </button>
       </div>
 
       <div className="row" style={{ justifyContent: "space-between", marginTop: 24 }}>

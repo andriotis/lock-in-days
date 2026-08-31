@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Config } from "../lib/db";
 import { daysBetween, fromDayKey, prettyDate, todayKey } from "../lib/dates";
 import { quoteForDay } from "../lib/quotes";
@@ -31,29 +32,27 @@ export default function Countdown({
       </p>
 
       <div className="card count-hero">
-        {!started ? (
-          <>
-            <div className="count-big">{Math.abs(daysBetween(today, start))}</div>
-            <div className="count-label">days until it begins</div>
-          </>
-        ) : finished ? (
-          <>
-            <div className="count-big">✓</div>
-            <div className="count-label">locked in. period complete</div>
-          </>
-        ) : (
-          <>
-            <div className="count-big">{remaining}</div>
-            <div className="count-label">
-              {remaining === 1 ? "day" : "days"} remaining
-            </div>
-          </>
-        )}
-
-        <div className="progress" aria-label={`${pct}% complete`}>
-          <i style={{ width: `${pct}%` }} />
-        </div>
-        <p className="muted" style={{ fontSize: 13, margin: 0 }}>
+        <ProgressRing fraction={started ? elapsed / total : 0}>
+          {!started ? (
+            <>
+              <div className="count-big">{Math.abs(daysBetween(today, start))}</div>
+              <div className="count-label">days until it begins</div>
+            </>
+          ) : finished ? (
+            <>
+              <div className="count-big">✓</div>
+              <div className="count-label">complete</div>
+            </>
+          ) : (
+            <>
+              <div className="count-big">{remaining}</div>
+              <div className="count-label">
+                {remaining === 1 ? "day" : "days"} remaining
+              </div>
+            </>
+          )}
+        </ProgressRing>
+        <p className="muted" style={{ fontSize: 13, margin: "4px 0 0" }}>
           Day {Math.min(elapsed + (started ? 1 : 0), total)} of {total} · {pct}%
           through
         </p>
@@ -74,17 +73,46 @@ export default function Countdown({
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 12 }}>
-        <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-          {finished
-            ? "You made it to the end of your lock-in. Time to look back at how far you've come."
-            : started
-            ? `Stay on it. Every checked box and every photo is proof you showed up today.`
-            : "Your countdown is set. Show up on day one."}
-        </p>
-      </div>
-
       <DailyQuote />
+    </div>
+  );
+}
+
+function ProgressRing({
+  fraction,
+  children,
+}: {
+  fraction: number;
+  children: ReactNode;
+}) {
+  const size = 240;
+  const stroke = 16;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const f = Math.max(0, Math.min(1, fraction));
+
+  return (
+    <div className="count-ring">
+      <svg className="ring" viewBox={`0 0 ${size} ${size}`}>
+        <circle
+          className="ring-track"
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          strokeWidth={stroke}
+        />
+        <circle
+          className="ring-prog"
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          strokeWidth={stroke}
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - f)}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+      <div className="count-center">{children}</div>
     </div>
   );
 }
