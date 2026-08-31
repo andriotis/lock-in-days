@@ -1,14 +1,24 @@
 import { useRef, useState } from "react";
 import type { Config } from "../lib/db";
-import { exportBackup, importBackup, setConfig } from "../lib/db";
+import {
+  clearWallpaper,
+  exportBackup,
+  importBackup,
+  setConfig,
+  setWallpaper,
+} from "../lib/db";
+import PeriodPicker from "./PeriodPicker";
+import WallpaperPicker from "./WallpaperPicker";
 
 export default function Settings({
   config,
+  wallpaperUrl,
   onClose,
   reload,
   toast,
 }: {
   config: Config;
+  wallpaperUrl: string | null;
   onClose: () => void;
   reload: () => void;
   toast: (m: string) => void;
@@ -19,11 +29,23 @@ export default function Settings({
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function save() {
-    if (!title.trim() || end <= start) return;
-    await setConfig({ title: title.trim(), startDate: start, endDate: end });
+    if (end <= start) return;
+    await setConfig({ title: title.trim() || "Lock In", startDate: start, endDate: end });
     toast("Saved");
     reload();
     onClose();
+  }
+
+  async function pickWallpaper(blob: Blob) {
+    await setWallpaper(blob);
+    toast("Background updated");
+    reload();
+  }
+
+  async function removeWallpaper() {
+    await clearWallpaper();
+    toast("Background removed");
+    reload();
   }
 
   async function doExport() {
@@ -64,17 +86,30 @@ export default function Settings({
           <span>Title</span>
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={40} />
         </label>
-        <label className="field">
-          <span>Start date</span>
-          <input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
-        </label>
-        <label className="field">
-          <span>End date</span>
-          <input type="date" value={end} min={start} onChange={(e) => setEnd(e.target.value)} />
-        </label>
-        <button className="btn primary block" onClick={save} disabled={!title.trim() || end <= start}>
+        <div className="divider" />
+        <PeriodPicker
+          start={start}
+          end={end}
+          onChange={(s, e) => {
+            setStart(s);
+            setEnd(e);
+          }}
+        />
+        <button className="btn primary block" onClick={save} disabled={end <= start} style={{ marginTop: 16 }}>
           Save changes
         </button>
+      </div>
+
+      <h2>Background</h2>
+      <div className="card">
+        <p className="muted" style={{ marginTop: 0, fontSize: 14 }}>
+          Pick a photo that motivates you. The whole app sits on top of it.
+        </p>
+        <WallpaperPicker
+          previewUrl={wallpaperUrl}
+          onPick={pickWallpaper}
+          onClear={removeWallpaper}
+        />
       </div>
 
       <h2>Your data</h2>
@@ -97,7 +132,7 @@ export default function Settings({
       </div>
 
       <p className="hint" style={{ textAlign: "center", marginTop: 20 }}>
-        Lock In Days · local-first · v0.1
+        Lock In Days · local-first · v0.2
       </p>
     </div>
   );

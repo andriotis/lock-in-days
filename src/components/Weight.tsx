@@ -92,7 +92,7 @@ export default function Weight({
             <span>current ({unit})</span>
           </div>
           <div className="stat">
-            <b style={{ color: delta != null && delta < 0 ? "var(--good)" : delta != null && delta > 0 ? "var(--warn)" : undefined }}>
+            <b style={{ color: delta != null && delta < 0 ? "#7ee787" : delta != null && delta > 0 ? "#ffd479" : undefined }}>
               {delta != null ? (delta > 0 ? "+" : "") + delta.toFixed(1) : "—"}
             </b>
             <span>net change</span>
@@ -159,13 +159,9 @@ function Chart({
   return (
     <svg className="chart" viewBox={`0 0 ${W} ${H}`}>
       <defs>
-        <linearGradient id="chartGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#22d3ee" />
-          <stop offset="1" stopColor="#6366f1" />
-        </linearGradient>
         <linearGradient id="chartArea" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#22d3ee" stopOpacity="0.28" />
-          <stop offset="1" stopColor="#22d3ee" stopOpacity="0" />
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.22" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
         </linearGradient>
       </defs>
 

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Config, DayLog, Habit, Photo } from "./lib/db";
-import { getConfig, getHabits, getLogs, getPhotos } from "./lib/db";
+import { getConfig, getHabits, getLogs, getPhotos, getWallpaper } from "./lib/db";
 import Countdown from "./components/Countdown";
 import PhotoCapture from "./components/PhotoCapture";
 import Weight from "./components/Weight";
@@ -26,18 +26,28 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("countdown");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [wallpaperUrl, setWallpaperUrl] = useState<string | null>(null);
+  const wallpaperUrlRef = useRef<string | null>(null);
 
   const reload = useCallback(async () => {
-    const [c, h, l, p] = await Promise.all([
+    const [c, h, l, p, wall] = await Promise.all([
       getConfig(),
       getHabits(),
       getLogs(),
       getPhotos(),
+      getWallpaper(),
     ]);
     setConfigState(c);
     setHabits(h);
     setLogs(l);
     setPhotos(p);
+
+    // Swap the wallpaper object URL, revoking the previous one.
+    if (wallpaperUrlRef.current) URL.revokeObjectURL(wallpaperUrlRef.current);
+    const nextUrl = wall ? URL.createObjectURL(wall) : null;
+    wallpaperUrlRef.current = nextUrl;
+    setWallpaperUrl(nextUrl);
+
     setLoading(false);
   }, []);
 
@@ -52,8 +62,12 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="center-screen">
-        <div className="count-big" style={{ fontSize: 40, opacity: 0.6 }}>Lock In</div>
+      <div className="app">
+        <div className="wallpaper" />
+        <div className="scrim" />
+        <div className="center-screen">
+          <div className="hero-title" style={{ opacity: 0.55 }}>Lock In</div>
+        </div>
       </div>
     );
   }
@@ -70,9 +84,16 @@ export default function App() {
 
   return (
     <div className="app">
+      <div
+        className="wallpaper"
+        style={wallpaperUrl ? { backgroundImage: `url(${wallpaperUrl})` } : undefined}
+      />
+      <div className="scrim" />
+
       {settingsOpen ? (
         <Settings
           config={config}
+          wallpaperUrl={wallpaperUrl}
           onClose={() => setSettingsOpen(false)}
           reload={reload}
           toast={toast}

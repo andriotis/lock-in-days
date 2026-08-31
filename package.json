@@ -1,7 +1,7 @@
 {
   "name": "lock-in-days",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "A local-first PWA to help you lock in: countdown, progress photos, weight tracking, and habit streaks.",
   "scripts": {

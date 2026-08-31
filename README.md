@@ -1,10 +1,17 @@
 # Lock In Days
 
 A local-first web app (installable PWA) to help you lock in during a focused
-period. Four tools, one home screen:
+period. Four tools, one home screen.
+
+**Design:** the interface is deliberately neutral — frosted-glass "material"
+cards, monochrome type, and an iOS-style floating tab bar. You set a **personal
+background photo** during onboarding (and can change it in Settings), and the
+whole app sits on top of it, so it feels like *your* phone home screen rather
+than a branded app.
 
 1. **Countdown** — days remaining in your lock-in period, with a progress bar
-   and simple stats.
+   and simple stats. Set the period with a two-column picker: start/end dates on
+   the left and a vertical "timer" slider on the right to dial in the length.
 2. **Progress photos** — take consistent gym/progress shots using a **ghost
    overlay** of your last photo so pose, position, and distance line up every
    time. Includes a rule-of-thirds grid, a date stamp, a gallery, and a
@@ -74,14 +81,17 @@ fullscreen like a native app.
 src/
   App.tsx                 app shell, tab navigation, data loading
   lib/
-    db.ts                 IndexedDB storage + backup/restore
+    db.ts                 IndexedDB storage (incl. wallpaper) + backup/restore
     dates.ts              local-day helpers
+    image.ts              downscale picked photos before storing
   components/
     Countdown.tsx         days-remaining screen
     PhotoCapture.tsx      camera, ghost overlay, gallery, slideshow
     Weight.tsx            weight entry + SVG trend chart
     Habits.tsx            daily checklist + GitHub-style heatmap
+    PeriodPicker.tsx      dates + vertical "timer" slider
+    WallpaperPicker.tsx   personal background photo picker
     Setup.tsx             first-run onboarding
-    Settings.tsx          edit period, export/restore backup
+    Settings.tsx          edit period, background, export/restore backup
     icons.tsx             inline SVG icons
 ```

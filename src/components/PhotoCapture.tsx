@@ -154,7 +154,7 @@ export default function PhotoCapture({
         </div>
       </div>
 
-      {error && <p className="hint" style={{ color: "var(--bad)" }}>{error}</p>}
+      {error && <p className="hint" style={{ color: "#ff9a9a" }}>{error}</p>}
 
       {lastPhoto && (
         <label className="field" style={{ marginTop: 14 }}>

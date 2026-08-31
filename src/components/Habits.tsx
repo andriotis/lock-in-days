@@ -234,9 +234,9 @@ function HabitHeatmap({
                   background: cell.done
                     ? habit.color
                     : cell.inRange && !cell.future
-                    ? "var(--bg-elev-2)"
+                    ? "rgba(255,255,255,0.08)"
                     : "transparent",
-                  opacity: cell.future || !cell.inRange ? 0.25 : 1,
+                  opacity: cell.future || !cell.inRange ? 0.3 : 1,
                 }}
               />
             ))
@@ -245,7 +245,7 @@ function HabitHeatmap({
       </div>
       <div className="legend">
         <span>Skipped</span>
-        <span className="cellbox" style={{ background: "var(--bg-elev-2)" }} />
+        <span className="cellbox" style={{ background: "rgba(255,255,255,0.08)" }} />
         <span className="cellbox" style={{ background: habit.color }} />
         <span>Done</span>
       </div>

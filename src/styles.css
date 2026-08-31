@@ -1,17 +1,26 @@
 :root {
-  --bg: #0b0f14;
-  --bg-elev: #131a23;
-  --bg-elev-2: #1b2531;
-  --line: #263140;
-  --text: #e8eef6;
-  --muted: #8ea0b5;
-  --faint: #5b6b7e;
-  --accent: #22d3ee;
-  --accent-2: #6366f1;
-  --good: #34d399;
-  --warn: #fbbf24;
-  --bad: #f87171;
-  --radius: 16px;
+  /* Neutral, "unopinionated" palette. The user's wallpaper supplies the color;
+     the UI is monochrome glass so it feels personal like a phone home screen. */
+  --text: #ffffff;
+  --muted: rgba(235, 238, 245, 0.72);
+  --faint: rgba(235, 238, 245, 0.5);
+  --fainter: rgba(235, 238, 245, 0.32);
+
+  /* Glass materials layered over the wallpaper */
+  --glass: rgba(255, 255, 255, 0.1);
+  --glass-2: rgba(255, 255, 255, 0.14);
+  --glass-input: rgba(255, 255, 255, 0.08);
+  --hairline: rgba(255, 255, 255, 0.16);
+  --hairline-strong: rgba(255, 255, 255, 0.28);
+
+  /* One high-contrast "prominent" material for primary actions — white, not a hue */
+  --prominent: rgba(255, 255, 255, 0.94);
+  --on-prominent: #0b0b0c;
+
+  --blur: saturate(180%) blur(24px);
+  --radius: 20px;
+  --radius-sm: 14px;
+
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   color-scheme: dark;
@@ -30,13 +39,47 @@ body,
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: #0b0b0c;
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.4;
   overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Wallpaper + scrim ------------------------------------------------------- */
+
+.wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-color: #0b0b0c;
+  /* Neutral graphite default until the user sets a photo */
+  background-image: radial-gradient(
+    130% 90% at 50% -15%,
+    #2b2f36 0%,
+    #16181d 55%,
+    #0b0b0c 100%
+  );
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  /* Keep light text readable over any wallpaper without hiding it */
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.32) 0%,
+    rgba(0, 0, 0, 0.12) 26%,
+    rgba(0, 0, 0, 0.28) 68%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
 }
 
 /* Layout ------------------------------------------------------------------ */
@@ -57,29 +100,32 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px 10px 16px;
-  background: rgba(11, 15, 20, 0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--line);
+  padding: 10px 12px 10px 18px;
+  background: rgba(20, 21, 26, 0.5);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-bottom: 1px solid var(--hairline);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 800;
+  gap: 9px;
+  font-weight: 700;
   letter-spacing: -0.01em;
+  font-size: 17px;
 }
 
 .brand .logo {
   width: 22px;
   height: 22px;
+  opacity: 0.95;
 }
 
 .screen {
   flex: 1;
-  padding: 12px 16px 96px;
-  animation: fade 0.18s ease;
+  padding: 14px 16px 108px;
+  animation: fade 0.2s ease;
 }
 
 @keyframes fade {
@@ -94,15 +140,22 @@ body {
 }
 
 .tabbar {
-  position: sticky;
-  bottom: 0;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(10px + var(--safe-bottom));
+  width: min(680px, calc(100% - 24px));
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  padding: 8px 8px calc(8px + var(--safe-bottom));
-  background: rgba(11, 15, 20, 0.85);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid var(--line);
+  gap: 2px;
+  padding: 7px;
+  background: rgba(20, 21, 26, 0.55);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--hairline);
+  border-radius: 22px;
+  z-index: 30;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .tab {
@@ -111,18 +164,19 @@ body {
   color: var(--faint);
   font-size: 11px;
   font-weight: 600;
-  padding: 6px 0;
-  border-radius: 12px;
+  padding: 8px 0;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   cursor: pointer;
-  transition: color 0.15s;
+  transition: color 0.15s, background 0.15s;
 }
 
 .tab.active {
-  color: var(--accent);
+  color: var(--text);
+  background: var(--glass-2);
 }
 
 .tab svg {
@@ -133,32 +187,56 @@ body {
 /* Typography -------------------------------------------------------------- */
 
 h1 {
-  font-size: 22px;
-  margin: 4px 0 2px;
+  font-size: 26px;
+  margin: 6px 0 2px;
   letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
 h2 {
-  font-size: 15px;
+  font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--muted);
-  margin: 24px 0 12px;
+  margin: 26px 0 12px;
+  font-weight: 600;
+}
+
+.hero-title {
+  font-size: clamp(40px, 13vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .sub {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
   margin: 0 0 8px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 10px;
 }
 
 /* Cards ------------------------------------------------------------------- */
 
 .card {
-  background: var(--bg-elev);
-  border: 1px solid var(--line);
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 18px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 10px 30px rgba(0, 0, 0, 0.22);
 }
 
 .card + .card {
@@ -170,15 +248,17 @@ h2 {
 button.btn,
 .btn {
   appearance: none;
-  border: 1px solid var(--line);
-  background: var(--bg-elev-2);
+  border: 1px solid var(--hairline);
+  background: var(--glass-2);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   color: var(--text);
   font-size: 15px;
   font-weight: 600;
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: transform 0.08s, background 0.15s, border-color 0.15s;
+  transition: transform 0.08s, background 0.15s, border-color 0.15s, opacity 0.15s;
 }
 
 .btn:active {
@@ -186,18 +266,28 @@ button.btn,
 }
 
 .btn.primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: var(--prominent);
   border-color: transparent;
-  color: #06121a;
+  color: var(--on-prominent);
+}
+
+.btn.primary:active {
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .btn.ghost {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.btn.sm {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 11px;
 }
 
 .btn.danger {
-  color: var(--bad);
-  border-color: #4a2530;
+  color: #ff8f8f;
+  border-color: rgba(255, 120, 120, 0.35);
 }
 
 .btn.block {
@@ -207,7 +297,7 @@ button.btn,
 }
 
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -215,30 +305,35 @@ input[type="text"],
 input[type="number"],
 input[type="date"] {
   width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--line);
+  background: var(--glass-input);
+  border: 1px solid var(--hairline);
   color: var(--text);
   font-size: 16px;
-  padding: 12px 14px;
-  border-radius: 12px;
+  padding: 13px 14px;
+  border-radius: var(--radius-sm);
   font-family: inherit;
+}
+
+input::placeholder {
+  color: var(--fainter);
 }
 
 input:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--hairline-strong);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 label.field {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 label.field > span {
   display: block;
   font-size: 13px;
   color: var(--muted);
-  margin-bottom: 6px;
+  margin-bottom: 7px;
 }
 
 .row {
@@ -258,63 +353,183 @@ label.field > span {
 .pill {
   font-size: 12px;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 5px 11px;
   border-radius: 999px;
-  background: var(--bg-elev-2);
-  border: 1px solid var(--line);
+  background: var(--glass-2);
+  border: 1px solid var(--hairline);
   color: var(--muted);
 }
 
 .empty {
   color: var(--faint);
   text-align: center;
-  padding: 32px 16px;
+  padding: 34px 16px;
   font-size: 14px;
 }
 
-.muted {
+.divider {
+  height: 1px;
+  background: var(--hairline);
+  margin: 16px 0;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--faint);
+  margin-top: 8px;
+}
+
+/* Period picker (dates + vertical timer slider) --------------------------- */
+
+.period {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.period-dates {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.period-slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  min-width: 92px;
+  background: var(--glass-input);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+}
+
+.period-readout {
+  text-align: center;
+  padding-top: 6px;
+}
+
+.period-readout b {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.period-readout span {
+  font-size: 11px;
   color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.vrange {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 22px;
+  height: 150px;
+  accent-color: #ffffff;
+  cursor: pointer;
+}
+
+.period-weeks {
+  font-size: 12px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  padding-bottom: 4px;
+}
+
+/* Wallpaper picker -------------------------------------------------------- */
+
+.wall-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wall-drop {
+  appearance: none;
+  position: relative;
+  width: 100%;
+  height: 128px;
+  border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--hairline-strong);
+  background: var(--glass-input);
+  background-size: cover;
+  background-position: center;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.wall-drop-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wall-drop-change {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--hairline);
+  color: #fff;
 }
 
 /* Countdown --------------------------------------------------------------- */
 
 .count-hero {
   text-align: center;
-  padding: 20px 0 8px;
+  padding: 22px 0 10px;
 }
 
 .count-big {
-  font-size: clamp(64px, 22vw, 128px);
-  font-weight: 800;
+  font-size: clamp(72px, 24vw, 132px);
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.04em;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
 }
 
 .count-label {
   color: var(--muted);
-  font-size: 15px;
+  font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  margin-top: 4px;
+  letter-spacing: 0.16em;
+  margin-top: 8px;
 }
 
 .progress {
-  height: 10px;
-  background: var(--bg-elev-2);
+  height: 8px;
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 999px;
   overflow: hidden;
-  margin: 20px 0 8px;
-  border: 1px solid var(--line);
+  margin: 22px 0 10px;
 }
 
 .progress > i {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  background: rgba(255, 255, 255, 0.92);
   border-radius: 999px;
   transition: width 0.4s ease;
 }
@@ -322,21 +537,25 @@ label.field > span {
 .stat-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px;
   margin-top: 12px;
 }
 
 .stat {
-  background: var(--bg-elev);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  padding: 14px 10px;
   text-align: center;
 }
 
 .stat b {
   display: block;
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat span {
@@ -353,7 +572,7 @@ label.field > span {
   background: #000;
   border-radius: var(--radius);
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: 1px solid var(--hairline);
 }
 
 .cam-wrap video,
@@ -386,35 +605,44 @@ label.field > span {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 14px;
+  margin-top: 16px;
+  padding: 0 8px;
 }
 
 .shutter {
-  width: 74px;
-  height: 74px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
-  border: 4px solid var(--text);
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: 4px solid rgba(255, 255, 255, 0.9);
+  background: #fff;
   cursor: pointer;
   flex: 0 0 auto;
   transition: transform 0.08s;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25);
 }
 
 .shutter:active {
   transform: scale(0.9);
 }
 
+.shutter:disabled {
+  opacity: 0.5;
+}
+
 .icon-btn {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--bg-elev-2);
+  border: 1px solid var(--hairline);
+  background: var(--glass-2);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   color: var(--text);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  font-weight: 700;
 }
 
 .icon-btn svg {
@@ -436,11 +664,11 @@ label.field > span {
 .cam-tag {
   font-size: 12px;
   font-weight: 600;
-  padding: 5px 10px;
+  padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--hairline);
 }
 
 .gallery {
@@ -452,10 +680,10 @@ label.field > span {
 .gallery .cell {
   position: relative;
   aspect-ratio: 3 / 4;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--line);
-  background: var(--bg-elev-2);
+  border: 1px solid var(--hairline);
+  background: var(--glass-input);
 }
 
 .gallery .cell img {
@@ -475,10 +703,9 @@ label.field > span {
   text-align: center;
 }
 
-/* Slider / range for opacity */
 input[type="range"] {
   width: 100%;
-  accent-color: var(--accent);
+  accent-color: #ffffff;
 }
 
 /* Weight chart ------------------------------------------------------------ */
@@ -490,7 +717,7 @@ input[type="range"] {
 }
 
 .chart .grid-line {
-  stroke: var(--line);
+  stroke: var(--hairline);
   stroke-width: 1;
 }
 
@@ -501,7 +728,7 @@ input[type="range"] {
 
 .chart .line {
   fill: none;
-  stroke: url(#chartGrad);
+  stroke: #ffffff;
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -512,12 +739,12 @@ input[type="range"] {
 }
 
 .chart .dot {
-  fill: var(--accent);
-  stroke: var(--bg);
+  fill: #ffffff;
+  stroke: rgba(0, 0, 0, 0.35);
   stroke-width: 2;
 }
 
-/* Habit grid (GitHub style) ----------------------------------------------- */
+/* Habit grid -------------------------------------------------------------- */
 
 .habit-block + .habit-block {
   margin-top: 18px;
@@ -540,7 +767,7 @@ input[type="range"] {
 .dot-swatch {
   width: 12px;
   height: 12px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .heat-scroll {
@@ -560,8 +787,7 @@ input[type="range"] {
   width: 13px;
   height: 13px;
   border-radius: 3px;
-  background: var(--bg-elev-2);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .legend {
@@ -577,9 +803,9 @@ input[type="range"] {
 .legend .cellbox {
   width: 12px;
   height: 12px;
+  border-radius: 3px;
 }
 
-/* Today checklist */
 .check-list {
   display: flex;
   flex-direction: column;
@@ -590,23 +816,21 @@ input[type="range"] {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--bg-elev);
+  padding: 13px 15px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   cursor: pointer;
   user-select: none;
-}
-
-.check-item.done {
-  border-color: transparent;
 }
 
 .check-box {
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  border: 2px solid var(--line);
+  border: 2px solid var(--hairline-strong);
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -634,11 +858,11 @@ input[type="range"] {
 
 .streak {
   font-size: 12px;
-  color: var(--warn);
+  color: #ffd479;
   font-weight: 700;
 }
 
-/* Onboarding / dialogs ---------------------------------------------------- */
+/* Misc -------------------------------------------------------------------- */
 
 .center-screen {
   min-height: 100%;
@@ -648,28 +872,20 @@ input[type="range"] {
   padding: 24px;
 }
 
-.hint {
-  font-size: 13px;
-  color: var(--faint);
-  margin-top: 6px;
-}
-
-.divider {
-  height: 1px;
-  background: var(--line);
-  margin: 16px 0;
-}
-
 .toast {
   position: fixed;
   left: 50%;
-  bottom: calc(90px + var(--safe-bottom));
+  bottom: calc(104px + var(--safe-bottom));
   transform: translateX(-50%);
-  background: var(--bg-elev-2);
-  border: 1px solid var(--line);
-  padding: 10px 16px;
+  background: rgba(20, 21, 26, 0.72);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--hairline);
+  padding: 11px 18px;
   border-radius: 999px;
   font-size: 14px;
+  font-weight: 500;
   z-index: 50;
   animation: fade 0.2s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }

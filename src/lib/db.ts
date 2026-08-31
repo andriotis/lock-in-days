@@ -92,6 +92,20 @@ export async function setConfig(cfg: Config): Promise<void> {
   await tx("kv", "readwrite", (s) => s.put(cfg, "config"));
 }
 
+// ---- Wallpaper (personal background) ---------------------------------------
+
+export function getWallpaper(): Promise<Blob | undefined> {
+  return tx<Blob | undefined>("kv", "readonly", (s) => s.get("wallpaper"));
+}
+
+export async function setWallpaper(blob: Blob): Promise<void> {
+  await tx("kv", "readwrite", (s) => s.put(blob, "wallpaper"));
+}
+
+export async function clearWallpaper(): Promise<void> {
+  await tx("kv", "readwrite", (s) => s.delete("wallpaper"));
+}
+
 // ---- Habits ----------------------------------------------------------------
 
 export function getHabits(): Promise<Habit[]> {
@@ -144,6 +158,7 @@ export interface Backup {
   version: number;
   exportedAt: string;
   config?: Config;
+  wallpaper?: string; // data URL
   habits: Habit[];
   logs: DayLog[];
   photos: { id: string; date: string; createdAt: number; dataUrl: string }[];
@@ -164,8 +179,9 @@ async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
 }
 
 export async function exportBackup(): Promise<Backup> {
-  const [config, habits, logs, photos] = await Promise.all([
+  const [config, wallpaper, habits, logs, photos] = await Promise.all([
     getConfig(),
+    getWallpaper(),
     getHabits(),
     getLogs(),
     getPhotos(),
@@ -182,6 +198,7 @@ export async function exportBackup(): Promise<Backup> {
     version: 1,
     exportedAt: new Date().toISOString(),
     config,
+    wallpaper: wallpaper ? await blobToDataUrl(wallpaper) : undefined,
     habits,
     logs,
     photos: encodedPhotos,
@@ -190,6 +207,7 @@ export async function exportBackup(): Promise<Backup> {
 
 export async function importBackup(b: Backup): Promise<void> {
   if (b.config) await setConfig(b.config);
+  if (b.wallpaper) await setWallpaper(await dataUrlToBlob(b.wallpaper));
   for (const h of b.habits ?? []) await putHabit(h);
   for (const l of b.logs ?? []) await putLog(l);
   for (const p of b.photos ?? []) {
