@@ -10,8 +10,8 @@ whole app sits on top of it, so it feels like *your* phone home screen rather
 than a branded app.
 
 1. **Countdown** — days remaining in your lock-in period, with a progress bar
-   and simple stats. Set the period with a two-column picker: start/end dates on
-   the left and a vertical "timer" slider on the right to dial in the length.
+   and simple stats. Set the period by picking start/end dates or just typing
+   the number of days — all three stay in sync.
 2. **Progress photos** — take consistent gym/progress shots using a **ghost
    overlay** of your last photo so pose, position, and distance line up every
    time. Includes a rule-of-thirds grid, a date stamp, a gallery, and a
@@ -89,7 +89,7 @@ src/
     PhotoCapture.tsx      camera, ghost overlay, gallery, slideshow
     Weight.tsx            weight entry + SVG trend chart
     Habits.tsx            daily checklist + GitHub-style heatmap
-    PeriodPicker.tsx      dates + vertical "timer" slider
+    PeriodPicker.tsx      start/end dates + typed length in days
     WallpaperPicker.tsx   personal background photo picker
     Setup.tsx             first-run onboarding
     Settings.tsx          edit period, background, export/restore backup

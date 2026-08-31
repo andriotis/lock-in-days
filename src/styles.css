@@ -379,69 +379,54 @@ label.field > span {
   margin-top: 8px;
 }
 
-/* Period picker (dates + vertical timer slider) --------------------------- */
+/* Period picker (dates + typed length) ------------------------------------ */
 
 .period {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 18px;
-  align-items: stretch;
-}
-
-.period-dates {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 12px;
 }
 
-.period-slider {
+.period-row {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 10px;
-  padding: 4px 8px;
-  min-width: 92px;
+}
+
+.period-length {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
   background: var(--glass-input);
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
 }
 
-.period-readout {
-  text-align: center;
-  padding-top: 6px;
-}
-
-.period-readout b {
-  display: block;
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.period-readout span {
-  font-size: 11px;
+.period-length > span {
+  font-size: 13px;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
-.vrange {
-  writing-mode: vertical-lr;
-  direction: rtl;
-  width: 22px;
-  height: 150px;
-  accent-color: #ffffff;
-  cursor: pointer;
+.days-field {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
-.period-weeks {
-  font-size: 12px;
-  color: var(--faint);
+.days-field input {
+  width: 84px;
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  padding-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.days-field .u {
+  font-size: 14px;
+  color: var(--muted);
 }
 
 /* Wallpaper picker -------------------------------------------------------- */

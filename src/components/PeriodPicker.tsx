@@ -1,12 +1,13 @@
+import { useEffect, useState } from "react";
 import { addDays, daysBetween, fromDayKey, toDayKey } from "../lib/dates";
 
-const MIN_DAYS = 7;
-const MAX_DAYS = 365;
+const MIN_DAYS = 1;
+const MAX_DAYS = 3650;
 
 /**
- * Two-column period picker: dates on the left, a vertical "timer" slider on the
- * right that sets the duration. Dragging the slider moves the end date; editing
- * a date snaps the slider to match.
+ * Compact period picker: start and end dates, plus a typed "length in days"
+ * field. All three stay in sync — type a length and the end date moves; edit a
+ * date and the length updates.
  */
 export default function PeriodPicker({
   start,
@@ -17,44 +18,39 @@ export default function PeriodPicker({
   end: string;
   onChange: (start: string, end: string) => void;
 }) {
-  const days = Math.min(
-    MAX_DAYS,
-    Math.max(MIN_DAYS, daysBetween(fromDayKey(start), fromDayKey(end)))
-  );
+  const days = Math.max(1, daysBetween(fromDayKey(start), fromDayKey(end)));
 
-  function setDays(n: number) {
-    onChange(start, toDayKey(addDays(fromDayKey(start), n)));
+  // Local buffer so the field can be briefly empty/partial while typing.
+  const [daysText, setDaysText] = useState(String(days));
+  useEffect(() => setDaysText(String(days)), [days]);
+
+  function commitDays(text: string) {
+    setDaysText(text);
+    const n = parseInt(text, 10);
+    if (Number.isFinite(n) && n >= MIN_DAYS) {
+      onChange(start, toDayKey(addDays(fromDayKey(start), Math.min(n, MAX_DAYS))));
+    }
   }
 
   function setStart(next: string) {
     if (!next) return;
-    // Keep the same duration when the start moves.
-    onChange(next, toDayKey(addDays(fromDayKey(next), days)));
+    onChange(next, toDayKey(addDays(fromDayKey(next), days))); // keep the length
   }
 
   function setEnd(next: string) {
     if (!next) return;
-    const s = fromDayKey(start);
-    const e = fromDayKey(next);
-    const d = daysBetween(s, e);
-    if (d < 1) return; // end must be after start
+    if (daysBetween(fromDayKey(start), fromDayKey(next)) < 1) return;
     onChange(start, next);
   }
 
-  const weeks = Math.round(days / 7);
-
   return (
     <div className="period">
-      <div className="period-dates">
-        <label className="field">
+      <div className="period-row">
+        <label className="field grow" style={{ marginBottom: 0 }}>
           <span>Start</span>
-          <input
-            type="date"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-          />
+          <input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
         </label>
-        <label className="field" style={{ marginBottom: 0 }}>
+        <label className="field grow" style={{ marginBottom: 0 }}>
           <span>End</span>
           <input
             type="date"
@@ -65,22 +61,21 @@ export default function PeriodPicker({
         </label>
       </div>
 
-      <div className="period-slider">
-        <div className="period-readout">
-          <b>{days}</b>
-          <span>days</span>
+      <div className="period-length">
+        <span>Length</span>
+        <div className="days-field">
+          <input
+            type="number"
+            inputMode="numeric"
+            min={MIN_DAYS}
+            max={MAX_DAYS}
+            value={daysText}
+            onChange={(e) => commitDays(e.target.value)}
+            onBlur={() => setDaysText(String(days))}
+            aria-label="Length in days"
+          />
+          <span className="u">days</span>
         </div>
-        <input
-          className="vrange"
-          type="range"
-          min={MIN_DAYS}
-          max={MAX_DAYS}
-          step={1}
-          value={days}
-          onChange={(e) => setDays(Number(e.target.value))}
-          aria-label="Lock-in length in days"
-        />
-        <span className="period-weeks">{weeks}w</span>
       </div>
     </div>
   );
