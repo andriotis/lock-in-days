@@ -23,6 +23,13 @@ export default function PhotoCapture({
   const [ghost, setGhost] = useState(0.4); // ghost overlay opacity
   const [slideshow, setSlideshow] = useState(false);
 
+  // Mirror (selfie flip). Off by default so photos save the way they really
+  // look, not flipped. Persisted per-device.
+  const [mirror, setMirror] = useState(() => localStorage.getItem("camMirror") === "1");
+  useEffect(() => {
+    localStorage.setItem("camMirror", mirror ? "1" : "0");
+  }, [mirror]);
+
   // Self-timer: gives you time to step back into a full-body frame.
   const [timerSec, setTimerSec] = useState(10);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -125,6 +132,11 @@ export default function PhotoCapture({
       sh = v.videoWidth / dstRatio;
       sy = (v.videoHeight - sh) / 2;
     }
+    // Flip the saved frame to match the preview only when Mirror is on.
+    if (mirror) {
+      ctx.translate(TARGET_W, 0);
+      ctx.scale(-1, 1);
+    }
     ctx.drawImage(v, sx, sy, sw, sh, 0, 0, TARGET_W, TARGET_H);
 
     const blob = await new Promise<Blob | null>((res) =>
@@ -160,7 +172,7 @@ export default function PhotoCapture({
 
       <div className="cam-wrap">
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-        <video ref={videoRef} playsInline muted />
+        <video ref={videoRef} playsInline muted className={mirror ? "mirror" : undefined} />
 
         {lastPhoto && ghost > 0 && (
           <img
@@ -201,21 +213,32 @@ export default function PhotoCapture({
       )}
 
       <div className="cam-controls">
-        <div className="timer-select" role="group" aria-label="Self-timer">
-          {[
-            { v: 0, l: "Off" },
-            { v: 3, l: "3s" },
-            { v: 10, l: "10s" },
-          ].map((o) => (
-            <button
-              key={o.v}
-              className={`timer-chip${timerSec === o.v ? " active" : ""}`}
-              onClick={() => setTimerSec(o.v)}
-              disabled={countdown !== null}
-            >
-              {o.l}
-            </button>
-          ))}
+        <div className="cam-options">
+          <div className="timer-select" role="group" aria-label="Self-timer">
+            {[
+              { v: 0, l: "Off" },
+              { v: 3, l: "3s" },
+              { v: 10, l: "10s" },
+            ].map((o) => (
+              <button
+                key={o.v}
+                className={`timer-chip${timerSec === o.v ? " active" : ""}`}
+                onClick={() => setTimerSec(o.v)}
+                disabled={countdown !== null}
+              >
+                {o.l}
+              </button>
+            ))}
+          </div>
+          <button
+            className={`opt-toggle${mirror ? " active" : ""}`}
+            onClick={() => setMirror((m) => !m)}
+            disabled={countdown !== null}
+            aria-pressed={mirror}
+            title="Flip the image left-to-right like a mirror"
+          >
+            Mirror {mirror ? "on" : "off"}
+          </button>
         </div>
         <button
           className={`shutter${countdown !== null ? " counting" : ""}`}

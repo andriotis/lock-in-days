@@ -657,6 +657,36 @@ label.field > span {
   margin-top: 16px;
 }
 
+.cam-options {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.opt-toggle {
+  border: 1px solid var(--hairline);
+  background: var(--glass-input);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.opt-toggle.active {
+  background: var(--prominent);
+  color: var(--on-prominent);
+  border-color: transparent;
+}
+
+.opt-toggle:disabled {
+  opacity: 0.4;
+}
+
 .timer-select {
   display: flex;
   gap: 6px;
