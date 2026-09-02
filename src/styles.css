@@ -95,45 +95,10 @@ body {
   padding-top: var(--safe-top);
 }
 
-.settings-fab {
-  position: fixed;
-  top: calc(12px + var(--safe-top));
-  right: max(14px, calc(50vw - 360px + 14px));
-  z-index: 40;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid var(--hairline);
-  background: rgba(20, 21, 26, 0.5);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.08s, background 0.15s;
-}
-
-.settings-fab:active {
-  transform: scale(0.92);
-}
-
-.settings-fab svg {
-  width: 22px;
-  height: 22px;
-}
-
 .screen {
   flex: 1;
   padding: 16px 16px 108px;
   animation: fade 0.2s ease;
-}
-
-/* Reserve room on the right of a screen's header row so its action button
-   (e.g. Habits "Edit") never sits under the floating settings button. */
-.screen-head {
-  padding-right: 48px;
 }
 
 @keyframes fade {
@@ -154,7 +119,7 @@ body {
   bottom: calc(10px + var(--safe-bottom));
   width: min(680px, calc(100% - 24px));
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 2px;
   padding: 7px;
   background: rgba(20, 21, 26, 0.55);

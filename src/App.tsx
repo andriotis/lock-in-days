@@ -15,7 +15,7 @@ import {
   IconTimer,
 } from "./components/icons";
 
-type Tab = "countdown" | "photos" | "weight" | "habits";
+type Tab = "countdown" | "photos" | "weight" | "habits" | "settings";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -24,7 +24,6 @@ export default function App() {
   const [logs, setLogs] = useState<DayLog[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [tab, setTab] = useState<Tab>("countdown");
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [wallpaperUrl, setWallpaperUrl] = useState<string | null>(null);
   const wallpaperUrlRef = useRef<string | null>(null);
@@ -90,51 +89,37 @@ export default function App() {
       />
       <div className="scrim" />
 
-      {settingsOpen ? (
-        <Settings
-          config={config}
-          wallpaperUrl={wallpaperUrl}
-          onClose={() => setSettingsOpen(false)}
-          reload={reload}
-          toast={toast}
-        />
-      ) : (
-        <>
-          <button
-            className="settings-fab"
-            onClick={() => setSettingsOpen(true)}
-            aria-label="Settings"
-          >
-            <IconGear />
-          </button>
-
-          {tab === "countdown" && (
-            <Countdown config={config} photoCount={photos.length} loggedDays={loggedDays} />
-          )}
-          {tab === "photos" && (
-            <PhotoCapture photos={photos} reload={reload} toast={toast} />
-          )}
-          {tab === "weight" && <Weight logs={logs} reload={reload} toast={toast} />}
-          {tab === "habits" && (
-            <Habits config={config} habits={habits} logs={logs} reload={reload} toast={toast} />
-          )}
-
-          <nav className="tabbar">
-            <TabButton active={tab === "countdown"} onClick={() => setTab("countdown")} label="Countdown">
-              <IconTimer />
-            </TabButton>
-            <TabButton active={tab === "photos"} onClick={() => setTab("photos")} label="Photos">
-              <IconCamera />
-            </TabButton>
-            <TabButton active={tab === "weight"} onClick={() => setTab("weight")} label="Weight">
-              <IconScale />
-            </TabButton>
-            <TabButton active={tab === "habits"} onClick={() => setTab("habits")} label="Habits">
-              <IconGrid />
-            </TabButton>
-          </nav>
-        </>
+      {tab === "countdown" && (
+        <Countdown config={config} photoCount={photos.length} loggedDays={loggedDays} />
       )}
+      {tab === "photos" && (
+        <PhotoCapture photos={photos} reload={reload} toast={toast} />
+      )}
+      {tab === "weight" && <Weight logs={logs} reload={reload} toast={toast} />}
+      {tab === "habits" && (
+        <Habits config={config} habits={habits} logs={logs} reload={reload} toast={toast} />
+      )}
+      {tab === "settings" && (
+        <Settings config={config} wallpaperUrl={wallpaperUrl} reload={reload} toast={toast} />
+      )}
+
+      <nav className="tabbar">
+        <TabButton active={tab === "countdown"} onClick={() => setTab("countdown")} label="Countdown">
+          <IconTimer />
+        </TabButton>
+        <TabButton active={tab === "photos"} onClick={() => setTab("photos")} label="Photos">
+          <IconCamera />
+        </TabButton>
+        <TabButton active={tab === "weight"} onClick={() => setTab("weight")} label="Weight">
+          <IconScale />
+        </TabButton>
+        <TabButton active={tab === "habits"} onClick={() => setTab("habits")} label="Habits">
+          <IconGrid />
+        </TabButton>
+        <TabButton active={tab === "settings"} onClick={() => setTab("settings")} label="Settings">
+          <IconGear />
+        </TabButton>
+      </nav>
 
       {toastMsg && <div className="toast">{toastMsg}</div>}
     </div>

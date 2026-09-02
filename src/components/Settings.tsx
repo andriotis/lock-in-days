@@ -13,13 +13,11 @@ import WallpaperPicker from "./WallpaperPicker";
 export default function Settings({
   config,
   wallpaperUrl,
-  onClose,
   reload,
   toast,
 }: {
   config: Config;
   wallpaperUrl: string | null;
-  onClose: () => void;
   reload: () => void;
   toast: (m: string) => void;
 }) {
@@ -33,7 +31,6 @@ export default function Settings({
     await setConfig({ title: title.trim() || "Lock In", startDate: start, endDate: end });
     toast("Saved");
     reload();
-    onClose();
   }
 
   async function pickWallpaper(blob: Blob) {
@@ -67,7 +64,6 @@ export default function Settings({
       await importBackup(data);
       toast("Backup restored");
       reload();
-      onClose();
     } catch {
       toast("Could not read that backup file");
     }
@@ -75,10 +71,7 @@ export default function Settings({
 
   return (
     <div className="screen">
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h1 style={{ margin: 0 }}>Settings</h1>
-        <button className="btn ghost" onClick={onClose}>Close</button>
-      </div>
+      <h1>Settings</h1>
 
       <h2>Lock-in period</h2>
       <div className="card">

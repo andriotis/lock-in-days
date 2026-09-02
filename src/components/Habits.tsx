@@ -83,7 +83,7 @@ export default function Habits({
 
   return (
     <div className="screen">
-      <div className="row screen-head" style={{ justifyContent: "space-between" }}>
+      <div className="row" style={{ justifyContent: "space-between" }}>
         <h1 style={{ margin: 0 }}>Habits</h1>
         <button className="btn ghost" onClick={() => setManage((m) => !m)}>
           {manage ? "Done" : "Edit"}
