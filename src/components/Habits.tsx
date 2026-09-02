@@ -6,6 +6,7 @@ import {
   daysBetween,
   fromDayKey,
   prettyDate,
+  shortDate,
   toDayKey,
   todayKey,
 } from "../lib/dates";
@@ -130,9 +131,7 @@ export default function Habits({
           </div>
 
           <h2>Consistency</h2>
-          {habits.map((h) => (
-            <HabitHeatmap key={h.id} habit={h} config={config} logByDate={logByDate} />
-          ))}
+          <HabitMatrix habits={habits} config={config} logByDate={logByDate} />
         </>
       )}
 
@@ -173,81 +172,78 @@ export default function Habits({
   );
 }
 
-function HabitHeatmap({
-  habit,
+/**
+ * A single aggregated grid: one row per habit, one column per day of the
+ * lock-in period. Each habit fills its row in its own color, so all habits are
+ * visible at once without scrolling through separate grids.
+ */
+function HabitMatrix({
+  habits,
   config,
   logByDate,
 }: {
-  habit: Habit;
+  habits: Habit[];
   config: Config;
   logByDate: Map<string, DayLog>;
 }) {
   const today = fromDayKey(todayKey());
+  const todayK = toDayKey(today);
   const start = fromDayKey(config.startDate);
   const end = fromDayKey(config.endDate);
 
-  // Grid runs from the Sunday on/before the start, through this week.
-  const gridStart = addDays(start, -start.getDay());
-  const gridEnd = addDays(today, 6 - today.getDay());
-  const totalDays = daysBetween(gridStart, gridEnd) + 1;
-  const weeks: {
-    key: string;
-    inRange: boolean;
-    future: boolean;
-    done: boolean;
-  }[][] = [];
-
-  for (let i = 0; i < totalDays; i++) {
-    const d = addDays(gridStart, i);
+  const totalDays = Math.max(1, daysBetween(start, end) + 1);
+  const days = Array.from({ length: totalDays }, (_, i) => {
+    const d = addDays(start, i);
     const key = toDayKey(d);
-    const inRange = daysBetween(start, d) >= 0 && daysBetween(d, end) >= 0;
-    const future = daysBetween(today, d) > 0;
-    const done = !!logByDate.get(key)?.done[habit.id];
-    const col = Math.floor(i / 7);
-    if (!weeks[col]) weeks[col] = [];
-    weeks[col].push({ key, inRange, future, done });
-  }
-
-  const doneCount = weeks.flat().filter((c) => c.done).length;
-  const possible = weeks.flat().filter((c) => c.inRange && !c.future).length;
+    return { key, future: daysBetween(today, d) > 0, isToday: key === todayK };
+  });
 
   return (
-    <div className="card habit-block">
-      <div className="habit-head">
-        <span className="name">
-          <span className="dot-swatch" style={{ background: habit.color }} />
-          {habit.name}
-        </span>
-        <span className="pill">
-          {doneCount}/{possible} days
-        </span>
-      </div>
-      <div className="heat-scroll">
-        <div className="heat">
-          {weeks.map((week, wi) =>
-            week.map((cell, di) => (
-              <div
-                key={`${wi}-${di}`}
-                className="cellbox"
-                title={cell.key}
-                style={{
-                  background: cell.done
-                    ? habit.color
-                    : cell.inRange && !cell.future
-                    ? "rgba(255,255,255,0.08)"
-                    : "transparent",
-                  opacity: cell.future || !cell.inRange ? 0.3 : 1,
-                }}
-              />
-            ))
-          )}
+    <div className="card">
+      <div className="matrix-scroll">
+        <div className="matrix">
+          {habits.map((h) => {
+            const doneCount = days.filter(
+              (d) => !d.future && logByDate.get(d.key)?.done[h.id]
+            ).length;
+            return (
+              <div className="matrix-row" key={h.id}>
+                <div className="matrix-label">
+                  <span className="dot-swatch" style={{ background: h.color }} />
+                  <span className="matrix-name">{h.name}</span>
+                  <span className="matrix-count">{doneCount}</span>
+                </div>
+                <div className="matrix-days">
+                  {days.map((d) => {
+                    const done = !!logByDate.get(d.key)?.done[h.id];
+                    return (
+                      <i
+                        key={d.key}
+                        className={`mcell${d.isToday ? " today" : ""}`}
+                        title={`${h.name} · ${d.key}`}
+                        style={{
+                          background: done
+                            ? h.color
+                            : d.future
+                            ? "transparent"
+                            : "rgba(255,255,255,0.08)",
+                          opacity: d.future ? 0.35 : 1,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
       <div className="legend">
-        <span>Skipped</span>
-        <span className="cellbox" style={{ background: "rgba(255,255,255,0.08)" }} />
-        <span className="cellbox" style={{ background: habit.color }} />
-        <span>Done</span>
+        <span>{shortDate(config.startDate)}</span>
+        <span className="grow" />
+        <span>filled = done · today outlined</span>
+        <span className="grow" />
+        <span>{shortDate(config.endDate)}</span>
       </div>
     </div>
   );

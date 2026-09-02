@@ -12,6 +12,8 @@
   --glass-input: rgba(255, 255, 255, 0.08);
   --hairline: rgba(255, 255, 255, 0.16);
   --hairline-strong: rgba(255, 255, 255, 0.28);
+  /* Opaque-ish backing so cells scrolling under the sticky habit label stay hidden */
+  --bg-mask: rgba(17, 19, 24, 0.92);
 
   /* One high-contrast "prominent" material for primary actions — white, not a hue */
   --prominent: rgba(255, 255, 255, 0.94);
@@ -649,9 +651,87 @@ label.field > span {
 
 .cam-controls {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.timer-select {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: var(--glass-input);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+}
+
+.timer-chip {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.timer-chip.active {
+  background: var(--prominent);
+  color: var(--on-prominent);
+}
+
+.timer-chip:disabled {
+  opacity: 0.4;
+}
+
+.shutter.counting {
+  background: #ff5a5a;
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.cam-countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 16px;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.cam-countdown span {
+  font-size: clamp(96px, 40vw, 200px);
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 4px 40px rgba(0, 0, 0, 0.6);
+  animation: countpop 1s ease-out;
+}
+
+.cam-countdown small {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+@keyframes countpop {
+  0% {
+    transform: scale(1.4);
+    opacity: 0.2;
+  }
+  30% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .shutter {
@@ -791,64 +871,89 @@ input[type="range"] {
 
 /* Habit grid -------------------------------------------------------------- */
 
-.habit-block + .habit-block {
-  margin-top: 18px;
-}
-
-.habit-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.habit-head .name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-}
-
 .dot-swatch {
   width: 12px;
   height: 12px;
   border-radius: 4px;
+  flex: 0 0 auto;
 }
 
-.heat-scroll {
+/* Aggregated habit matrix: one row per habit, one column per day */
+.matrix-scroll {
   overflow-x: auto;
   padding-bottom: 4px;
 }
 
-.heat {
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-rows: repeat(7, 1fr);
-  gap: 3px;
+.matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   width: max-content;
 }
 
-.heat .cellbox {
+.matrix-row {
+  display: flex;
+  align-items: center;
+}
+
+.matrix-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 116px;
+  min-width: 116px;
+  padding-right: 12px;
+  /* Mask the cells that scroll underneath the sticky label */
+  background: linear-gradient(
+    90deg,
+    var(--bg-mask) 0%,
+    var(--bg-mask) 82%,
+    transparent 100%
+  );
+}
+
+.matrix-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.matrix-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.matrix-days {
+  display: flex;
+  gap: 3px;
+}
+
+.mcell {
   width: 13px;
   height: 13px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.08);
+  flex: 0 0 auto;
+}
+
+.mcell.today {
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.7);
 }
 
 .legend {
   display: flex;
   align-items: center;
-  gap: 6px;
-  justify-content: flex-end;
+  gap: 8px;
   font-size: 11px;
   color: var(--faint);
-  margin-top: 8px;
-}
-
-.legend .cellbox {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+  margin-top: 10px;
 }
 
 .check-list {

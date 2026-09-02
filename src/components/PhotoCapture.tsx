@@ -23,6 +23,43 @@ export default function PhotoCapture({
   const [ghost, setGhost] = useState(0.4); // ghost overlay opacity
   const [slideshow, setSlideshow] = useState(false);
 
+  // Self-timer: gives you time to step back into a full-body frame.
+  const [timerSec, setTimerSec] = useState(10);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const timerRef = useRef<number | null>(null);
+
+  function clearTimer() {
+    if (timerRef.current !== null) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setCountdown(null);
+  }
+  useEffect(() => clearTimer, []);
+
+  function onShutter() {
+    if (countdown !== null) {
+      clearTimer(); // tapping again cancels the countdown
+      return;
+    }
+    if (timerSec === 0) {
+      capture();
+      return;
+    }
+    setCountdown(timerSec);
+    timerRef.current = window.setInterval(() => {
+      setCountdown((c) => {
+        if (c === null) return null;
+        if (c <= 1) {
+          clearTimer();
+          capture();
+          return null;
+        }
+        return c - 1;
+      });
+    }, 1000);
+  }
+
   // Newest photo becomes the alignment ghost for the next shot.
   const lastPhoto = photos.length ? photos[photos.length - 1] : null;
 
@@ -138,6 +175,13 @@ export default function PhotoCapture({
           <span className="cam-tag">{shortDate(todayKey())}</span>
           {lastPhoto && <span className="cam-tag">👻 ghost on</span>}
         </div>
+
+        {countdown !== null && (
+          <div className="cam-countdown" onClick={clearTimer}>
+            <span key={countdown}>{countdown}</span>
+            <small>tap to cancel</small>
+          </div>
+        )}
       </div>
 
       {error && <p className="hint" style={{ color: "#ff9a9a" }}>{error}</p>}
@@ -157,7 +201,35 @@ export default function PhotoCapture({
       )}
 
       <div className="cam-controls">
-        <button className="shutter" onClick={capture} disabled={!ready} aria-label="Capture" />
+        <div className="timer-select" role="group" aria-label="Self-timer">
+          {[
+            { v: 0, l: "Off" },
+            { v: 3, l: "3s" },
+            { v: 10, l: "10s" },
+          ].map((o) => (
+            <button
+              key={o.v}
+              className={`timer-chip${timerSec === o.v ? " active" : ""}`}
+              onClick={() => setTimerSec(o.v)}
+              disabled={countdown !== null}
+            >
+              {o.l}
+            </button>
+          ))}
+        </div>
+        <button
+          className={`shutter${countdown !== null ? " counting" : ""}`}
+          onClick={onShutter}
+          disabled={!ready && countdown === null}
+          aria-label={countdown !== null ? "Cancel timer" : "Capture"}
+        />
+        <p className="hint" style={{ margin: 0, textAlign: "center" }}>
+          {countdown !== null
+            ? "Get into frame…"
+            : timerSec > 0
+            ? `${timerSec}s timer — tap, then step back into frame`
+            : "Tap to capture"}
+        </p>
       </div>
 
       <div className="row" style={{ justifyContent: "space-between", marginTop: 24 }}>
