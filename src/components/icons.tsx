@@ -77,3 +77,11 @@ export const IconPlay = (p: SVGProps<SVGSVGElement>) => (
     <path d="M6 4l14 8-14 8z" />
   </svg>
 );
+
+export const IconFlipH = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}>
+    <path d="M3 7l5 5-5 5V7z" />
+    <path d="M21 7l-5 5 5 5V7z" />
+    <path d="M12 3v2M12 9v2M12 15v2M12 21v-2" />
+  </svg>
+);

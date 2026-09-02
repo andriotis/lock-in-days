@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Photo } from "../lib/db";
 import { deletePhoto, putPhoto } from "../lib/db";
 import { shortDate, todayKey } from "../lib/dates";
-import { IconCamera, IconPlay, IconTrash } from "./icons";
+import { IconCamera, IconFlipH, IconPlay, IconTrash } from "./icons";
 
 const TARGET_W = 1080;
 const TARGET_H = 1440; // 3:4 portrait — a consistent frame for the compilation
@@ -23,9 +23,9 @@ export default function PhotoCapture({
   const [ghost, setGhost] = useState(0.4); // ghost overlay opacity
   const [slideshow, setSlideshow] = useState(false);
 
-  // Mirror (selfie flip). Off by default so photos save the way they really
-  // look, not flipped. Persisted per-device.
-  const [mirror, setMirror] = useState(() => localStorage.getItem("camMirror") === "1");
+  // Mirror (selfie flip). On by default (the usual selfie feel); flip icon
+  // toggles it since the "right" orientation varies by device. Persisted.
+  const [mirror, setMirror] = useState(() => localStorage.getItem("camMirror") !== "0");
   useEffect(() => {
     localStorage.setItem("camMirror", mirror ? "1" : "0");
   }, [mirror]);
@@ -235,9 +235,10 @@ export default function PhotoCapture({
             onClick={() => setMirror((m) => !m)}
             disabled={countdown !== null}
             aria-pressed={mirror}
-            title="Flip the image left-to-right like a mirror"
+            aria-label="Flip image left-to-right"
+            title="Flip image left-to-right"
           >
-            Mirror {mirror ? "on" : "off"}
+            <IconFlipH />
           </button>
         </div>
         <button
