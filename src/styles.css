@@ -878,82 +878,96 @@ input[type="range"] {
   flex: 0 0 auto;
 }
 
-/* Aggregated habit matrix: one row per habit, one column per day */
-.matrix-scroll {
-  overflow-x: auto;
-  padding-bottom: 4px;
+/* Aggregated habit grid: legend + pager arrows, one colored row per habit */
+.hgrid-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.matrix {
+.hgrid-legend {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: max-content;
+  flex-wrap: wrap;
+  gap: 10px 14px;
 }
 
-.matrix-row {
-  display: flex;
+.hgrid-legend-item {
+  display: inline-flex;
   align-items: center;
-}
-
-.matrix-label {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 116px;
-  min-width: 116px;
-  padding-right: 12px;
-  /* Mask the cells that scroll underneath the sticky label */
-  background: linear-gradient(
-    90deg,
-    var(--bg-mask) 0%,
-    var(--bg-mask) 82%,
-    transparent 100%
-  );
-}
-
-.matrix-name {
+  gap: 7px;
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
 }
 
-.matrix-count {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.matrix-days {
-  display: flex;
-  gap: 3px;
-}
-
-.mcell {
-  width: 13px;
-  height: 13px;
-  border-radius: 3px;
+.hgrid-chip {
+  width: 15px;
+  height: 12px;
+  border-radius: 4px;
+  border: 1.5px solid;
   flex: 0 0 auto;
 }
 
-.mcell.today {
-  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.7);
+.hgrid-nav {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
 }
 
-.legend {
+.hgrid-nav button {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--hairline);
+  background: var(--glass-input);
+  color: var(--text);
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.hgrid-nav button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.hgrid-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.hgrid-row {
+  display: flex;
+  gap: 6px;
+}
+
+.hgrid-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid transparent;
+  transition: background 0.15s;
+}
+
+.hgrid-cell.today {
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55);
+}
+
+.hgrid-cell.pad {
+  border-color: transparent !important;
+}
+
+.hgrid-foot {
+  text-align: center;
   font-size: 11px;
   color: var(--faint);
-  margin-top: 10px;
+  margin-top: 12px;
+  font-variant-numeric: tabular-nums;
 }
 
 .check-list {
