@@ -53,9 +53,22 @@ body {
 
 /* Wallpaper + scrim ------------------------------------------------------- */
 
-.wallpaper {
+/* Both fixed layers are pinned to the LARGE viewport height (100lvh) rather
+   than `inset: 0`. On mobile, `inset: 0` tracks the *dynamic* viewport, so the
+   layer resized every time the browser's URL bar slid in/out and
+   `background-size: cover` re-scaled the image — that was the scroll jitter.
+   100lvh stays constant regardless of the bar, so nothing rescales. */
+.wallpaper,
+.scrim {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh; /* fallback for browsers without large-viewport units */
+  height: 100lvh;
+}
+
+.wallpaper {
   z-index: -2;
   background-color: #0b0b0c;
   /* Neutral graphite default until the user sets a photo */
@@ -71,8 +84,6 @@ body {
 }
 
 .scrim {
-  position: fixed;
-  inset: 0;
   z-index: -1;
   /* Keep light text readable over any wallpaper without hiding it */
   background: linear-gradient(
