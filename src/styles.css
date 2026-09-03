@@ -97,6 +97,31 @@ body {
   );
 }
 
+/* One uniform frosted-glass backdrop for every surface — cards, buttons, tabs,
+   habit rows, stats, segmented controls, inputs — so they all read identically.
+   Defined once here; individual rules only set their tint/border. */
+.card,
+.tabbar,
+.toast,
+.btn,
+.stat,
+.icon-btn,
+.check-item,
+.seg,
+.timer-select,
+.opt-toggle,
+.pill,
+.add-habit,
+.habit-editor,
+.quote-refresh,
+.wall-drop,
+input[type="text"],
+input[type="number"],
+input[type="date"] {
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+}
+
 /* Layout ------------------------------------------------------------------ */
 
 .app {
