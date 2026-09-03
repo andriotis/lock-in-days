@@ -873,6 +873,72 @@ input[type="range"] {
   stroke-linejoin: round;
 }
 
+/* Faint raw daily line beneath the smoothed trend */
+.chart .line-raw {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.32);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Segmented range control */
+.seg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--glass-input);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+}
+
+.seg-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.seg-btn.active {
+  background: var(--prominent);
+  color: var(--on-prominent);
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-legend i {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  border-radius: 2px;
+}
+
+.chart-legend .sw-raw {
+  border-top: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.chart-legend .sw-trend {
+  border-top: 3px solid #ffffff;
+}
+
 .chart .area {
   fill: url(#chartArea);
 }
