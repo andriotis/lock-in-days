@@ -282,10 +282,21 @@ function HabitMatrix({
   const scrollRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; left: number } | null>(null);
 
-  // Open scrolled to the most recent day.
+  // Open with today at the right edge, so the days you've actually filled in
+  // (up to today) are visible without scrolling. If today is past the period,
+  // fall back to the very end.
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) el.scrollLeft = el.scrollWidth;
+    if (!el) return;
+    const todayCell = el.querySelector<HTMLElement>(".gcell.today");
+    if (todayCell) {
+      const cell = todayCell.getBoundingClientRect();
+      const cont = el.getBoundingClientRect();
+      const cellLeft = cell.left - cont.left + el.scrollLeft;
+      el.scrollLeft = Math.max(0, cellLeft - el.clientWidth + cell.width + 8);
+    } else {
+      el.scrollLeft = el.scrollWidth;
+    }
   }, [totalDays, habits.length]);
 
   // Mouse click-drag to pan (touch swipes scroll natively).
