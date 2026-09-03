@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DayLog } from "../lib/db";
 import { getLog, putLog } from "../lib/db";
-import { fromDayKey, shortDate, todayKey } from "../lib/dates";
+import { fromDayKey, prettyDate, shortDate, todayKey } from "../lib/dates";
 
 type Unit = "kg" | "lb";
 type Point = { date: string; weight: number; smooth: number; day: number };
@@ -163,7 +163,7 @@ export default function Weight({
   return (
     <div className="screen">
       <h1>Weight</h1>
-      <p className="sub">Log it once a day. Watch the trend, not the day-to-day noise.</p>
+      <p className="sub">{prettyDate(today)}</p>
 
       <div className="card">
         <div className="row" style={{ gap: 10 }}>

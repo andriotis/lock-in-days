@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Photo } from "../lib/db";
 import { deletePhotos, putPhoto, reorderPhotos } from "../lib/db";
-import { shortDate, todayKey } from "../lib/dates";
+import { prettyDate, shortDate, todayKey } from "../lib/dates";
 import { IconCamera, IconFlipH, IconPlay, IconTrash } from "./icons";
 import { useReorder } from "../lib/useReorder";
 
@@ -196,7 +196,7 @@ export default function PhotoCapture({
 
   return (
     <div className="screen">
-      <div className="row" style={{ justifyContent: "space-between", marginBottom: 14 }}>
+      <div className="row" style={{ justifyContent: "space-between" }}>
         <h1 style={{ margin: 0 }}>Photos</h1>
         <div className="seg" role="group" aria-label="Photos view">
           <button
@@ -213,6 +213,7 @@ export default function PhotoCapture({
           </button>
         </div>
       </div>
+      <p className="sub" style={{ margin: "6px 0 12px" }}>{prettyDate(todayKey())}</p>
 
       {pane === "camera" ? (
        <>
@@ -229,10 +230,11 @@ export default function PhotoCapture({
           />
         )}
 
-        <div className="cam-badge">
-          <span className="cam-tag">{shortDate(todayKey())}</span>
-          {lastPhoto && <span className="cam-tag">👻 ghost on</span>}
-        </div>
+        {lastPhoto && (
+          <div className="cam-badge">
+            <span className="cam-tag">👻 ghost on</span>
+          </div>
+        )}
 
         {countdown !== null && (
           <div className="cam-countdown" onClick={clearTimer}>
