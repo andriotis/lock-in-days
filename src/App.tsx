@@ -27,6 +27,7 @@ export default function App() {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [wallpaperUrl, setWallpaperUrl] = useState<string | null>(null);
   const wallpaperUrlRef = useRef<string | null>(null);
+  const wallpaperSigRef = useRef<string | null>(null);
 
   const reload = useCallback(async () => {
     const [c, h, l, p, wall] = await Promise.all([
@@ -41,11 +42,18 @@ export default function App() {
     setLogs(l);
     setPhotos(p);
 
-    // Swap the wallpaper object URL, revoking the previous one.
-    if (wallpaperUrlRef.current) URL.revokeObjectURL(wallpaperUrlRef.current);
-    const nextUrl = wall ? URL.createObjectURL(wall) : null;
-    wallpaperUrlRef.current = nextUrl;
-    setWallpaperUrl(nextUrl);
+    // Only rebuild the wallpaper object URL when the wallpaper actually
+    // changed. Recreating it every reload re-decodes the full-screen
+    // background (and blurs behind the glass) — a visible blink after any
+    // small write like a reorder.
+    const sig = wall ? `${wall.size}:${wall.type}` : "none";
+    if (sig !== wallpaperSigRef.current) {
+      if (wallpaperUrlRef.current) URL.revokeObjectURL(wallpaperUrlRef.current);
+      const nextUrl = wall ? URL.createObjectURL(wall) : null;
+      wallpaperUrlRef.current = nextUrl;
+      wallpaperSigRef.current = sig;
+      setWallpaperUrl(nextUrl);
+    }
 
     setLoading(false);
   }, []);

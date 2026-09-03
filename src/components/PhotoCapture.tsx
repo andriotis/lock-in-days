@@ -84,13 +84,32 @@ export default function PhotoCapture({
     ? photos.reduce((a, b) => (b.createdAt > a.createdAt ? b : a))
     : null;
 
-  // Build object URLs for the gallery + ghost, and revoke them on change.
+  // Object URLs for the gallery + ghost, cached by photo id. Reordering (or any
+  // reload) hands us fresh Photo objects for the same photos; reusing the
+  // existing URL for an id that's still present avoids re-decoding every
+  // thumbnail — which was the gallery "blink" on reorder.
+  const urlCacheRef = useRef(new Map<string, string>());
   const urls = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const p of photos) map.set(p.id, URL.createObjectURL(p.blob));
-    return map;
+    const cache = urlCacheRef.current;
+    const present = new Set(photos.map((p) => p.id));
+    for (const p of photos) {
+      if (!cache.has(p.id)) cache.set(p.id, URL.createObjectURL(p.blob));
+    }
+    for (const [id, u] of cache) {
+      if (!present.has(id)) {
+        URL.revokeObjectURL(u);
+        cache.delete(id);
+      }
+    }
+    return cache;
   }, [photos]);
-  useEffect(() => () => urls.forEach((u) => URL.revokeObjectURL(u)), [urls]);
+  useEffect(() => {
+    const cache = urlCacheRef.current;
+    return () => {
+      cache.forEach((u) => URL.revokeObjectURL(u));
+      cache.clear();
+    };
+  }, []);
 
   async function start() {
     setError(null);
