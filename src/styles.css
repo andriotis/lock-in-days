@@ -909,13 +909,31 @@ input[type="range"] {
   color: var(--on-prominent);
 }
 
+.zoom-box {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.zoom-box:active {
+  cursor: grabbing;
+}
+
 .chart-legend {
   display: flex;
   gap: 16px;
+  align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   margin-top: 6px;
   font-size: 12px;
   color: var(--muted);
+}
+
+.chart-legend .chart-hint {
+  color: var(--faint);
+  font-size: 11px;
 }
 
 .chart-legend span {
