@@ -36,6 +36,7 @@ export interface Photo {
   w: number;
   h: number;
   createdAt: number;
+  order?: number; // manual gallery order; falls back to createdAt
 }
 
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -106,6 +107,21 @@ export async function clearWallpaper(): Promise<void> {
   await tx("kv", "readwrite", (s) => s.delete("wallpaper"));
 }
 
+// ---- Danger: wipe everything -----------------------------------------------
+
+export async function clearAllData(): Promise<void> {
+  const db = await openDB();
+  await new Promise<void>((resolve, reject) => {
+    const t = db.transaction(["kv", "habits", "logs", "photos"], "readwrite");
+    t.objectStore("kv").clear();
+    t.objectStore("habits").clear();
+    t.objectStore("logs").clear();
+    t.objectStore("photos").clear();
+    t.oncomplete = () => resolve();
+    t.onerror = () => reject(t.error);
+  });
+}
+
 // ---- Habits ----------------------------------------------------------------
 
 export function getHabits(): Promise<Habit[]> {
@@ -120,6 +136,16 @@ export async function putHabit(h: Habit): Promise<void> {
 
 export async function deleteHabit(id: string): Promise<void> {
   await tx("habits", "readwrite", (s) => s.delete(id));
+}
+
+/** Persist a new habit order from a list of ids. */
+export async function reorderHabits(ids: string[]): Promise<void> {
+  const map = new Map((await getHabits()).map((h) => [h.id, h]));
+  let i = 0;
+  for (const id of ids) {
+    const h = map.get(id);
+    if (h) await putHabit({ ...h, order: i++ });
+  }
 }
 
 // ---- Day logs --------------------------------------------------------------
@@ -140,7 +166,7 @@ export async function putLog(log: DayLog): Promise<void> {
 
 export function getPhotos(): Promise<Photo[]> {
   return getAll<Photo>("photos").then((p) =>
-    p.sort((a, b) => a.createdAt - b.createdAt)
+    p.sort((a, b) => (a.order ?? a.createdAt) - (b.order ?? b.createdAt))
   );
 }
 
@@ -150,6 +176,20 @@ export async function putPhoto(p: Photo): Promise<void> {
 
 export async function deletePhoto(id: string): Promise<void> {
   await tx("photos", "readwrite", (s) => s.delete(id));
+}
+
+export async function deletePhotos(ids: string[]): Promise<void> {
+  for (const id of ids) await deletePhoto(id);
+}
+
+/** Persist a new gallery order from a list of photo ids. */
+export async function reorderPhotos(ids: string[]): Promise<void> {
+  const map = new Map((await getPhotos()).map((p) => [p.id, p]));
+  let i = 0;
+  for (const id of ids) {
+    const p = map.get(id);
+    if (p) await putPhoto({ ...p, order: i++ });
+  }
 }
 
 // ---- Backup / restore ------------------------------------------------------

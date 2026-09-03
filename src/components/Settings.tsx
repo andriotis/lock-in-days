@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import type { Config } from "../lib/db";
 import {
+  clearAllData,
   clearWallpaper,
   exportBackup,
   importBackup,
@@ -69,6 +70,19 @@ export default function Settings({
     }
   }
 
+  async function wipeAll() {
+    if (!confirm("Delete ALL data on this device? This can't be undone.")) return;
+    if (!confirm("Really delete everything? Make sure you've exported a backup.")) return;
+    await clearAllData();
+    try {
+      localStorage.removeItem("weightUnit");
+      localStorage.removeItem("camMirror");
+    } catch {
+      // ignore
+    }
+    reload();
+  }
+
   return (
     <div className="screen">
       <h1>Settings</h1>
@@ -122,10 +136,18 @@ export default function Settings({
           hidden
           onChange={(e) => e.target.files?.[0] && doImport(e.target.files[0])}
         />
+        <div className="divider" />
+        <button className="btn danger block" onClick={wipeAll}>
+          Delete all data
+        </button>
+        <p className="hint" style={{ marginBottom: 0 }}>
+          Erases your countdown, habits, weight, photos, and background from this
+          device. This can't be undone — export a backup first.
+        </p>
       </div>
 
       <p className="hint" style={{ textAlign: "center", marginTop: 20 }}>
-        Lock In Days · local-first · v0.2
+        Lock In Days · local-first · v0.3
       </p>
     </div>
   );

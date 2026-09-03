@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Config, DayLog, Habit } from "../lib/db";
-import { deleteHabit, getLog, putHabit, putLog } from "../lib/db";
+import { deleteHabit, getLog, putHabit, putLog, reorderHabits } from "../lib/db";
+import { useReorder } from "../lib/useReorder";
 import {
   addDays,
   daysBetween,
@@ -43,6 +44,12 @@ export default function Habits({
     for (const l of logs) m.set(l.date, l);
     return m;
   }, [logs]);
+
+  const habitById = useMemo(() => new Map(habits.map((h) => [h.id, h])), [habits]);
+  const reorder = useReorder(
+    habits.map((h) => h.id),
+    (ids) => reorderHabits(ids).then(reload)
+  );
 
   async function toggleToday(habitId: string) {
     const existing = (await getLog(today)) ?? { date: today, done: {} };
@@ -135,16 +142,22 @@ export default function Habits({
             <p className="sub" style={{ margin: "0 0 10px" }}>{prettyDate(today)}</p>
           )}
 
-          <div className="check-list">
-            {habits.map((h) => {
+          <div className="check-list" ref={(el) => (reorder.containerRef.current = el)}>
+            {reorder.orderIds.map((id) => {
+              const h = habitById.get(id);
+              if (!h) return null;
               const done = !!logByDate.get(today)?.done[h.id];
               const streak = streakOf(h.id);
               const editing = editingId === h.id;
               return (
                 <div key={h.id}>
                   <div
-                    className={`check-item${done ? " done" : ""}`}
-                    onClick={() => toggleToday(h.id)}
+                    className={`check-item${done ? " done" : ""}${reorder.dragId === h.id ? " reordering" : ""}`}
+                    {...reorder.itemProps(h.id)}
+                    onClick={() => {
+                      if (reorder.justDragged()) return;
+                      toggleToday(h.id);
+                    }}
                     style={done ? { background: h.color + "22", borderColor: h.color } : undefined}
                   >
                     <div
@@ -158,6 +171,7 @@ export default function Habits({
                     <button
                       className={`row-kebab${editing ? " open" : ""}`}
                       aria-label={`Edit ${h.name}`}
+                      onPointerDown={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditor(h);

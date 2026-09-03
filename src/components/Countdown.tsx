@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { Config } from "../lib/db";
 import { daysBetween, fromDayKey, prettyDate, todayKey } from "../lib/dates";
-import { quoteForDay } from "../lib/quotes";
+import { QUOTES, quoteForDay } from "../lib/quotes";
+import { IconRefresh } from "./icons";
 
 export default function Countdown({
   config,
@@ -118,12 +119,26 @@ function ProgressRing({
 }
 
 function DailyQuote() {
-  const q = quoteForDay(todayKey());
+  const [q, setQ] = useState(() => quoteForDay(todayKey()));
+  const isDaily = q === quoteForDay(todayKey());
+
+  function shuffle() {
+    if (QUOTES.length < 2) return;
+    let next = q;
+    while (next === q) next = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    setQ(next);
+  }
+
   return (
     <div className="card quote">
       <div className="quote-head">
         <span className="quote-mark">“</span>
-        <span className="pill">Daily · {q.tag}</span>
+        <span className="row" style={{ gap: 8 }}>
+          <span className="pill">{isDaily ? "Daily" : "More"} · {q.tag}</span>
+          <button className="quote-refresh" onClick={shuffle} aria-label="New quote">
+            <IconRefresh />
+          </button>
+        </span>
       </div>
       <blockquote>{q.text}</blockquote>
       <cite>— {q.author}</cite>

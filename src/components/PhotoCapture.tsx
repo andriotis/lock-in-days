@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Photo } from "../lib/db";
-import { deletePhoto, putPhoto } from "../lib/db";
+import { deletePhotos, putPhoto, reorderPhotos } from "../lib/db";
 import { shortDate, todayKey } from "../lib/dates";
 import { IconCamera, IconFlipH, IconPlay, IconTrash } from "./icons";
+import { useReorder } from "../lib/useReorder";
 
 const TARGET_W = 1080;
 const TARGET_H = 1440; // 3:4 portrait — a consistent frame for the compilation
@@ -23,6 +24,15 @@ export default function PhotoCapture({
   const [ghost, setGhost] = useState(0.4); // ghost overlay opacity
   const [slideshow, setSlideshow] = useState(false);
   const [pane, setPane] = useState<"camera" | "gallery">("camera");
+
+  // Gallery: batch-select + drag reorder.
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const photoById = useMemo(() => new Map(photos.map((p) => [p.id, p])), [photos]);
+  const reorder = useReorder(
+    photos.map((p) => p.id),
+    (ids) => reorderPhotos(ids).then(reload)
+  );
 
   // Mirror (selfie flip). On by default (the usual selfie feel); flip icon
   // toggles it since the "right" orientation varies by device. Persisted.
@@ -68,8 +78,11 @@ export default function PhotoCapture({
     }, 1000);
   }
 
-  // Newest photo becomes the alignment ghost for the next shot.
-  const lastPhoto = photos.length ? photos[photos.length - 1] : null;
+  // Newest photo (by capture time) becomes the alignment ghost for the next
+  // shot — regardless of any manual gallery reordering.
+  const lastPhoto = photos.length
+    ? photos.reduce((a, b) => (b.createdAt > a.createdAt ? b : a))
+    : null;
 
   // Build object URLs for the gallery + ghost, and revoke them on change.
   const urls = useMemo(() => {
@@ -146,21 +159,38 @@ export default function PhotoCapture({
     );
     if (!blob) return;
 
+    const now = Date.now();
     await putPhoto({
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id: `${now}-${Math.random().toString(36).slice(2, 7)}`,
       date: todayKey(),
       blob,
       w: TARGET_W,
       h: TARGET_H,
-      createdAt: Date.now(),
+      createdAt: now,
+      order: now, // default order = chronological
     });
     toast("Photo saved");
     reload();
   }
 
-  async function remove(id: string) {
-    if (!confirm("Delete this photo?")) return;
-    await deletePhoto(id);
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function exitSelect() {
+    setSelectMode(false);
+    setSelected(new Set());
+  }
+
+  async function deleteSelected() {
+    if (selected.size === 0) return;
+    if (!confirm(`Delete ${selected.size} photo${selected.size > 1 ? "s" : ""}?`)) return;
+    await deletePhotos([...selected]);
+    exitSelect();
     reload();
   }
 
@@ -274,13 +304,40 @@ export default function PhotoCapture({
         </>
       ) : (
         <>
-      {photos.length > 1 && (
-        <div className="row" style={{ justifyContent: "flex-end", marginBottom: 10 }}>
-          <button className="btn ghost" onClick={() => setSlideshow(true)}>
-            <span className="row" style={{ gap: 6 }}>
-              <IconPlay style={{ width: 16, height: 16 }} /> Play
-            </span>
-          </button>
+      {photos.length > 0 && (
+        <div className="row" style={{ justifyContent: "space-between", marginBottom: 10, gap: 8 }}>
+          {selectMode ? (
+            <>
+              <span className="muted" style={{ fontSize: 14, fontWeight: 600 }}>
+                {selected.size} selected
+              </span>
+              <div className="row" style={{ gap: 8 }}>
+                <button
+                  className="btn danger sm"
+                  onClick={deleteSelected}
+                  disabled={selected.size === 0}
+                >
+                  <span className="row" style={{ gap: 6 }}>
+                    <IconTrash style={{ width: 15, height: 15 }} /> Delete
+                  </span>
+                </button>
+                <button className="btn ghost sm" onClick={exitSelect}>Done</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <button className="btn ghost sm" onClick={() => setSelectMode(true)}>
+                Select
+              </button>
+              {photos.length > 1 && (
+                <button className="btn ghost sm" onClick={() => setSlideshow(true)}>
+                  <span className="row" style={{ gap: 6 }}>
+                    <IconPlay style={{ width: 16, height: 16 }} /> Play
+                  </span>
+                </button>
+              )}
+            </>
+          )}
         </div>
       )}
 
@@ -290,18 +347,38 @@ export default function PhotoCapture({
           <p>No photos yet. Take your day-one shot.</p>
         </div>
       ) : (
-        <div className="gallery">
-          {[...photos].reverse().map((p) => (
-            <div className="cell" key={p.id} onClick={() => remove(p.id)}>
-              <img src={urls.get(p.id)} alt={p.date} loading="lazy" />
-              <div className="d">{shortDate(p.date)}</div>
-            </div>
-          ))}
+        <div className="gallery" ref={(el) => (reorder.containerRef.current = el)}>
+          {reorder.orderIds.map((id) => {
+            const p = photoById.get(id);
+            if (!p) return null;
+            const isSel = selected.has(id);
+            return (
+              <div
+                className={`cell${reorder.dragId === id ? " reordering" : ""}${
+                  selectMode && isSel ? " selected" : ""
+                }`}
+                key={id}
+                {...(selectMode ? {} : reorder.itemProps(id))}
+                onClick={() => {
+                  if (selectMode) toggleSelect(id);
+                  else if (reorder.justDragged()) return;
+                }}
+              >
+                <img src={urls.get(id)} alt={p.date} loading="lazy" draggable={false} />
+                <div className="d">{shortDate(p.date)}</div>
+                {selectMode && (
+                  <span className={`sel-badge${isSel ? " on" : ""}`}>
+                    {isSel ? "✓" : ""}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
-      {photos.length > 0 && (
-        <p className="hint" style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <IconTrash style={{ width: 14, height: 14 }} /> Tap a photo to delete it.
+      {photos.length > 1 && !selectMode && (
+        <p className="hint" style={{ textAlign: "center" }}>
+          Hold and drag to reorder · Select to delete
         </p>
       )}
         </>
