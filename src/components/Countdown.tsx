@@ -4,15 +4,7 @@ import { daysBetween, fromDayKey, prettyDate, todayKey } from "../lib/dates";
 import { QUOTES, quoteForDay } from "../lib/quotes";
 import { IconRefresh } from "./icons";
 
-export default function Countdown({
-  config,
-  photoCount,
-  loggedDays,
-}: {
-  config: Config;
-  photoCount: number;
-  loggedDays: number;
-}) {
+export default function Countdown({ config }: { config: Config }) {
   const today = fromDayKey(todayKey());
   const start = fromDayKey(config.startDate);
   const end = fromDayKey(config.endDate);
@@ -27,10 +19,14 @@ export default function Countdown({
 
   return (
     <div className="screen">
-      <h1>{config.title}</h1>
-      <p className="sub">
-        {prettyDate(config.startDate)} → {prettyDate(config.endDate)}
-      </p>
+      <header className="page-head">
+        <div className="page-head-row">
+          <h1>{config.title}</h1>
+        </div>
+        <p className="sub">
+          {prettyDate(config.startDate)} → {prettyDate(config.endDate)}
+        </p>
+      </header>
 
       <div className="card count-hero">
         <ProgressRing fraction={started ? elapsed / total : 0}>
@@ -57,21 +53,6 @@ export default function Countdown({
           Day {Math.min(elapsed + (started ? 1 : 0), total)} of {total} · {pct}%
           through
         </p>
-      </div>
-
-      <div className="stat-row">
-        <div className="stat">
-          <b>{elapsed}</b>
-          <span>days done</span>
-        </div>
-        <div className="stat">
-          <b>{loggedDays}</b>
-          <span>days logged</span>
-        </div>
-        <div className="stat">
-          <b>{photoCount}</b>
-          <span>photos</span>
-        </div>
       </div>
 
       <DailyQuote />

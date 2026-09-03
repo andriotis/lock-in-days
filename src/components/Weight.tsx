@@ -162,8 +162,12 @@ export default function Weight({
 
   return (
     <div className="screen">
-      <h1>Weight</h1>
-      <p className="sub">{prettyDate(today)}</p>
+      <header className="page-head">
+        <div className="page-head-row">
+          <h1>Weight</h1>
+        </div>
+        <p className="sub">{prettyDate(today)}</p>
+      </header>
 
       <div className="card">
         <div className="row" style={{ gap: 10 }}>

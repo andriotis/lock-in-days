@@ -19,7 +19,9 @@
   --prominent: rgba(255, 255, 255, 0.94);
   --on-prominent: #0b0b0c;
 
-  --blur: saturate(180%) blur(24px);
+  /* Smaller radius = far cheaper backdrop compositing, so screens paint in one
+     frame on tab switch instead of visibly building up. */
+  --blur: saturate(150%) blur(14px);
   --radius: 20px;
   --radius-sm: 14px;
 
@@ -109,7 +111,31 @@ body {
 .screen {
   flex: 1;
   padding: 16px 16px 108px;
-  animation: fade 0.2s ease;
+  /* No entrance animation: fading a subtree full of backdrop-filters makes the
+     browser re-composite the blur every frame, which looked like the glass was
+     "building up" on each tab switch. A hard cut paints it in one frame. */
+}
+
+/* Consistent page header: title (+ optional right slot) and subtitle sit at the
+   same height and spacing on every page, whether or not a control is present. */
+.page-head {
+  margin-bottom: 14px;
+}
+
+.page-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+}
+
+.page-head h1 {
+  margin: 0;
+}
+
+.page-head .sub {
+  margin: 6px 0 0;
 }
 
 @keyframes fade {
@@ -234,8 +260,6 @@ button.btn,
   appearance: none;
   border: 1px solid var(--hairline);
   background: var(--glass-2);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
   color: var(--text);
   font-size: 15px;
   font-weight: 600;
@@ -533,8 +557,6 @@ label.field > span {
 
 .stat {
   background: var(--glass);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
   padding: 14px 10px;
@@ -801,8 +823,6 @@ label.field > span {
   border-radius: 50%;
   border: 1px solid var(--hairline);
   background: var(--glass-2);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
   color: var(--text);
   display: flex;
   align-items: center;
@@ -1130,8 +1150,6 @@ input[type="range"] {
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
   background: var(--glass);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
   cursor: pointer;
   user-select: none;
 }

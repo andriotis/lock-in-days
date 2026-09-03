@@ -85,7 +85,11 @@ export default function Settings({
 
   return (
     <div className="screen">
-      <h1>Settings</h1>
+      <header className="page-head">
+        <div className="page-head-row">
+          <h1>Settings</h1>
+        </div>
+      </header>
 
       <h2>Lock-in period</h2>
       <div className="card">

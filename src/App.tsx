@@ -83,12 +83,6 @@ export default function App() {
     return <Setup onDone={reload} />;
   }
 
-  const loggedDays = new Set(
-    logs
-      .filter((l) => l.weight != null || Object.keys(l.done).length > 0)
-      .map((l) => l.date)
-  ).size;
-
   return (
     <div className="app">
       <div
@@ -97,9 +91,7 @@ export default function App() {
       />
       <div className="scrim" />
 
-      {tab === "countdown" && (
-        <Countdown config={config} photoCount={photos.length} loggedDays={loggedDays} />
-      )}
+      {tab === "countdown" && <Countdown config={config} />}
       {tab === "photos" && (
         <PhotoCapture photos={photos} reload={reload} toast={toast} />
       )}

@@ -114,34 +114,33 @@ export default function Habits({
 
   return (
     <div className="screen">
-      <div className="row" style={{ justifyContent: "space-between", marginBottom: 14 }}>
-        <h1 style={{ margin: 0 }}>Habits</h1>
-        {habits.length > 0 && (
-          <div className="seg" role="group" aria-label="Habits view">
-            <button
-              className={`seg-btn${pane === "today" ? " active" : ""}`}
-              onClick={() => setPane("today")}
-            >
-              Today
-            </button>
-            <button
-              className={`seg-btn${pane === "consistency" ? " active" : ""}`}
-              onClick={() => setPane("consistency")}
-            >
-              Grid
-            </button>
-          </div>
-        )}
-      </div>
+      <header className="page-head">
+        <div className="page-head-row">
+          <h1>Habits</h1>
+          {habits.length > 0 && (
+            <div className="seg" role="group" aria-label="Habits view">
+              <button
+                className={`seg-btn${pane === "today" ? " active" : ""}`}
+                onClick={() => setPane("today")}
+              >
+                Today
+              </button>
+              <button
+                className={`seg-btn${pane === "consistency" ? " active" : ""}`}
+                onClick={() => setPane("consistency")}
+              >
+                Grid
+              </button>
+            </div>
+          )}
+        </div>
+        {habits.length > 0 && <p className="sub">{prettyDate(today)}</p>}
+      </header>
 
       {pane === "consistency" && habits.length > 0 ? (
         <HabitMatrix habits={habits} config={config} logByDate={logByDate} />
       ) : (
         <>
-          {habits.length > 0 && (
-            <p className="sub" style={{ margin: "0 0 10px" }}>{prettyDate(today)}</p>
-          )}
-
           <div className="check-list" ref={(el) => (reorder.containerRef.current = el)}>
             {reorder.orderIds.map((id) => {
               const h = habitById.get(id);
