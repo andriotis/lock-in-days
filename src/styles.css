@@ -1115,6 +1115,94 @@ input[type="range"] {
   font-weight: 700;
 }
 
+/* Inline habit editing */
+.row-kebab {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  margin: -4px -6px -4px 2px;
+  border: 0;
+  background: transparent;
+  color: var(--faint);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.row-kebab:hover,
+.row-kebab.open {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.row-kebab svg {
+  width: 20px;
+  height: 20px;
+}
+
+.habit-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  margin-top: -2px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--glass-input);
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.08s;
+}
+
+.swatch.active {
+  border-color: #ffffff;
+  transform: scale(1.06);
+}
+
+.add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.add-habit {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  border: 1.5px dashed var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.add-habit:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
 /* Misc -------------------------------------------------------------------- */
 
 .center-screen {

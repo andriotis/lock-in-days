@@ -78,6 +78,14 @@ export const IconPlay = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const IconDots = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}>
+    <circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+    <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" />
+  </svg>
+);
+
 export const IconFlipH = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...p}>
     <path d="M3 7l5 5-5 5V7z" />

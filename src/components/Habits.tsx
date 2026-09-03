@@ -10,7 +10,7 @@ import {
   toDayKey,
   todayKey,
 } from "../lib/dates";
-import { IconCheck, IconPlus, IconTrash } from "./icons";
+import { IconCheck, IconDots, IconPlus, IconTrash } from "./icons";
 
 const PALETTE = [
   "#22d3ee", "#34d399", "#f472b6", "#fbbf24",
@@ -30,9 +30,12 @@ export default function Habits({
   reload: () => void;
   toast: (m: string) => void;
 }) {
-  const [manage, setManage] = useState(false);
   const [newName, setNewName] = useState("");
   const [pane, setPane] = useState<"today" | "consistency">("today");
+  const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editColor, setEditColor] = useState(PALETTE[0]);
 
   const today = todayKey();
   const logByDate = useMemo(() => {
@@ -66,7 +69,27 @@ export default function Habits({
   async function removeHabit(h: Habit) {
     if (!confirm(`Delete "${h.name}"? Your logged history stays intact.`)) return;
     await deleteHabit(h.id);
+    setEditingId(null);
     reload();
+  }
+
+  function openEditor(h: Habit) {
+    setEditingId((id) => (id === h.id ? null : h.id));
+    setEditName(h.name);
+    setEditColor(h.color);
+  }
+
+  async function saveEdit(h: Habit) {
+    await putHabit({ ...h, name: editName.trim() || h.name, color: editColor });
+    setEditingId(null);
+    toast("Saved");
+    reload();
+  }
+
+  async function submitAdd() {
+    if (!newName.trim()) return;
+    await addHabit();
+    setAdding(false);
   }
 
   function streakOf(habitId: string): number {
@@ -84,106 +107,133 @@ export default function Habits({
 
   return (
     <div className="screen">
-      <div className="row" style={{ justifyContent: "space-between" }}>
+      <div className="row" style={{ justifyContent: "space-between", marginBottom: 14 }}>
         <h1 style={{ margin: 0 }}>Habits</h1>
-        <button className="btn ghost" onClick={() => setManage((m) => !m)}>
-          {manage ? "Done" : "Edit"}
-        </button>
-      </div>
-
-      {habits.length > 0 && !manage && (
-        <div className="seg seg-full" role="group" aria-label="Habits view" style={{ margin: "12px 0 14px" }}>
-          <button
-            className={`seg-btn${pane === "today" ? " active" : ""}`}
-            onClick={() => setPane("today")}
-          >
-            Today
-          </button>
-          <button
-            className={`seg-btn${pane === "consistency" ? " active" : ""}`}
-            onClick={() => setPane("consistency")}
-          >
-            Grid
-          </button>
-        </div>
-      )}
-
-      {habits.length === 0 && !manage && (
-        <div className="empty">
-          No habits yet.
-          <div style={{ marginTop: 12 }}>
-            <button className="btn primary" onClick={() => setManage(true)}>
-              Add your first habit
+        {habits.length > 0 && (
+          <div className="seg" role="group" aria-label="Habits view">
+            <button
+              className={`seg-btn${pane === "today" ? " active" : ""}`}
+              onClick={() => setPane("today")}
+            >
+              Today
+            </button>
+            <button
+              className={`seg-btn${pane === "consistency" ? " active" : ""}`}
+              onClick={() => setPane("consistency")}
+            >
+              Grid
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Today's checklist */}
-      {habits.length > 0 && !manage && pane === "today" && (
+      {pane === "consistency" && habits.length > 0 ? (
+        <HabitMatrix habits={habits} config={config} logByDate={logByDate} />
+      ) : (
         <>
-          <p className="sub" style={{ margin: "0 0 10px" }}>{prettyDate(today)}</p>
+          {habits.length > 0 && (
+            <p className="sub" style={{ margin: "0 0 10px" }}>{prettyDate(today)}</p>
+          )}
+
           <div className="check-list">
             {habits.map((h) => {
               const done = !!logByDate.get(today)?.done[h.id];
               const streak = streakOf(h.id);
+              const editing = editingId === h.id;
               return (
-                <div
-                  key={h.id}
-                  className={`check-item${done ? " done" : ""}`}
-                  onClick={() => toggleToday(h.id)}
-                  style={done ? { background: h.color + "22", borderColor: h.color } : undefined}
-                >
+                <div key={h.id}>
                   <div
-                    className="check-box"
-                    style={done ? { background: h.color, borderColor: h.color, color: "#06121a" } : undefined}
+                    className={`check-item${done ? " done" : ""}`}
+                    onClick={() => toggleToday(h.id)}
+                    style={done ? { background: h.color + "22", borderColor: h.color } : undefined}
                   >
-                    <IconCheck />
+                    <div
+                      className="check-box"
+                      style={done ? { background: h.color, borderColor: h.color, color: "#06121a" } : undefined}
+                    >
+                      <IconCheck />
+                    </div>
+                    <span className="name">{h.name}</span>
+                    {streak > 0 && <span className="streak">🔥 {streak}</span>}
+                    <button
+                      className={`row-kebab${editing ? " open" : ""}`}
+                      aria-label={`Edit ${h.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditor(h);
+                      }}
+                    >
+                      <IconDots />
+                    </button>
                   </div>
-                  <span className="name">{h.name}</span>
-                  {streak > 0 && <span className="streak">🔥 {streak}</span>}
+
+                  {editing && (
+                    <div className="habit-editor">
+                      <input
+                        className="grow"
+                        type="text"
+                        value={editName}
+                        autoFocus
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && saveEdit(h)}
+                      />
+                      <div className="swatches">
+                        {PALETTE.map((c) => (
+                          <button
+                            key={c}
+                            className={`swatch${editColor === c ? " active" : ""}`}
+                            style={{ background: c }}
+                            aria-label={`Colour ${c}`}
+                            onClick={() => setEditColor(c)}
+                          />
+                        ))}
+                      </div>
+                      <div className="row" style={{ gap: 8 }}>
+                        <button className="btn danger sm" onClick={() => removeHabit(h)}>
+                          <span className="row" style={{ gap: 6 }}>
+                            <IconTrash style={{ width: 15, height: 15 }} /> Delete
+                          </span>
+                        </button>
+                        <button className="btn primary sm grow" onClick={() => saveEdit(h)}>
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
-          </div>
-        </>
-      )}
 
-      {habits.length > 0 && !manage && pane === "consistency" && (
-        <HabitMatrix habits={habits} config={config} logByDate={logByDate} />
-      )}
-
-      {/* Manage view */}
-      {manage && (
-        <>
-          <h2>Your habits</h2>
-          <div className="check-list">
-            {habits.map((h) => (
-              <div className="check-item" key={h.id}>
-                <span className="dot-swatch" style={{ background: h.color }} />
-                <span className="name">{h.name}</span>
-                <button className="icon-btn" onClick={() => removeHabit(h)} style={{ width: 40, height: 40 }}>
-                  <IconTrash />
+            {adding ? (
+              <div className="add-row">
+                <input
+                  className="grow"
+                  type="text"
+                  autoFocus
+                  placeholder="New habit (e.g. Gym, Read 20m)"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") submitAdd();
+                    if (e.key === "Escape") { setAdding(false); setNewName(""); }
+                  }}
+                />
+                <button className="btn primary sm" onClick={submitAdd} disabled={!newName.trim()}>
+                  Add
                 </button>
               </div>
-            ))}
-          </div>
-          <div className="card" style={{ marginTop: 12 }}>
-            <div className="row" style={{ gap: 8 }}>
-              <input
-                className="grow"
-                type="text"
-                placeholder="New habit (e.g. Gym, Read 20m, No sugar)"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addHabit()}
-              />
-              <button className="btn primary" onClick={addHabit} disabled={!newName.trim()}>
-                <IconPlus style={{ width: 18, height: 18 }} />
+            ) : (
+              <button className="add-habit" onClick={() => setAdding(true)}>
+                <IconPlus style={{ width: 18, height: 18 }} /> Add habit
               </button>
-            </div>
-            <p className="hint">Keep it to a handful you can actually hit every day.</p>
+            )}
           </div>
+
+          {habits.length === 0 && !adding && (
+            <p className="hint" style={{ textAlign: "center" }}>
+              Add a few habits you can hit every day.
+            </p>
+          )}
         </>
       )}
     </div>
