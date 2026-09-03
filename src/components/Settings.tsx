@@ -151,7 +151,7 @@ export default function Settings({
       </div>
 
       <p className="hint" style={{ textAlign: "center", marginTop: 20 }}>
-        Lock In Days · local-first · v0.3
+        Lock In Days · local-first · v1.0
       </p>
     </div>
   );

@@ -1,37 +1,46 @@
 # Lock In Days
 
-A local-first web app (installable PWA) to help you lock in during a focused
-period. Four tools, one home screen.
+**A personal "lock‑in" tracker for a focused stretch of your life.** Set a
+period, then every day: watch the countdown, snap a consistent progress photo,
+log your weight, and tick off your habits — all on a screen that sits on top of
+your own wallpaper. Private, offline, no account.
 
-**Design:** the interface is deliberately neutral — frosted-glass "material"
-cards, monochrome type, and an iOS-style floating tab bar. You set a **personal
-background photo** during onboarding (and can change it in Settings), and the
-whole app sits on top of it, so it feels like *your* phone home screen rather
-than a branded app.
+> **The 20‑second version:** it's an installable phone app with five tabs —
+> **Countdown**, **Photos**, **Weight**, **Habits**, **Settings** — that helps
+> you stay disciplined during a set period (a cut, exam season, a 75‑day
+> challenge…). Everything lives on your device.
 
-1. **Countdown** — days remaining in your lock-in period, with a progress bar
-   and simple stats. Set the period by picking start/end dates or just typing
-   the number of days — all three stay in sync. Includes a **daily quote** from
-   philosophy, psychology, and the arts that changes each day.
-2. **Progress photos** — take consistent gym/progress shots using a **ghost
-   overlay** of your last photo so pose, position, and distance line up every
-   time. Includes a rule-of-thirds grid, a date stamp, a gallery, and a
-   speed-adjustable slideshow to preview your compilation.
-3. **Weight** — log your weight once a day and watch the trend on a clean line
-   chart (kg or lb).
-4. **Habits** — check off your daily habits and keep a **GitHub-style
-   contribution grid** green, with per-habit streaks.
+<br>
+
+## What each tab does
+
+| Tab | What you get |
+| --- | --- |
+| ⏱️ **Countdown** | A big ring showing days left in your period, plus a **daily quote** from philosophy, psychology, and the arts (tap ↻ for a new one). |
+| 📷 **Photos** | Take **consistent** progress photos: a faint **ghost of your last shot** helps you line up pose and distance, with a **self‑timer** (3s/10s) so you can step back for full‑body shots. Reorder, batch‑delete, and **play them as a slideshow** to preview a compilation. |
+| ⚖️ **Weight** | Log your weight once a day and see the trend on a clean chart with a **smoothed line** through the noise. **Pinch/scroll to zoom, drag to pan**, or jump to 1W / 1M / 3M / All. |
+| ✅ **Habits** | Tick off daily habits with **streaks**, add/rename/recolor/delete inline, and **drag to reorder**. A **GitHub‑style grid** shows every habit's consistency at a glance. |
+| ⚙️ **Settings** | Edit the period, set your **background photo**, **export/restore a backup**, or wipe all data. |
+
+<br>
+
+## The feel
+
+The interface is deliberately **neutral frosted glass** — monochrome text on
+translucent cards with a floating tab bar. You choose a **background photo**, and
+the whole app sits on top of it, so it feels like *your* home screen, not a
+branded app. Nothing competes with your wallpaper.
 
 ## Your data stays on your device
 
-Everything — config, weight, habits, and photos — is stored privately in your
-browser via **IndexedDB**. There is no server and no account. That means:
+Everything — your period, weight, habits, photos, and wallpaper — is stored
+privately in your browser via **IndexedDB**. No server, no account.
 
-- It works offline and costs nothing to run.
-- Nothing is uploaded anywhere.
-- Data lives on the one device/browser you use it in. **Clearing your browser
-  data or switching phones will lose it**, so use **Settings → Export backup**
-  regularly (and *Restore backup* to bring it back or move it to a new device).
+- Works **offline** and costs nothing to run.
+- **Nothing is uploaded** anywhere.
+- Data lives on that one device/browser. Clearing browser data or switching
+  phones loses it, so use **Settings → Export backup** now and then (and
+  *Restore backup* to move it to a new device).
 
 ## Run it locally
 
@@ -40,60 +49,63 @@ npm install
 npm run dev
 ```
 
-Then open the printed URL. To use it on your **phone on the same Wi-Fi**, the
-dev server is already exposed on your LAN — open the `Network:` URL Vite prints
-(e.g. `http://192.168.x.x:5173`) on your phone.
+Open the printed URL. To use it on your **phone on the same Wi‑Fi**, open the
+`Network:` URL Vite prints (e.g. `http://192.168.x.x:5173`).
 
-> **Camera note:** browsers only grant camera access over **HTTPS or on
-> `localhost`**. Opening the plain-HTTP LAN URL on your phone will show the
-> countdown/weight/habits fine, but the camera will be blocked. To use the
-> camera on your phone, deploy over HTTPS (below) and open that URL, or use a
-> local HTTPS tunnel.
+> **Camera note:** browsers only allow the camera over **HTTPS or `localhost`**.
+> Over a plain‑HTTP LAN URL, Countdown/Weight/Habits work but the camera is
+> blocked. Deploy over HTTPS (below) to use it on your phone.
 
 ## Build & deploy (recommended for phone use)
 
 ```bash
-npm run build      # outputs static files to dist/
-npm run preview    # preview the production build locally
+npm run build      # static site in dist/
+npm run preview    # preview the production build
 ```
 
-`dist/` is a fully static site — host it anywhere with HTTPS and you get camera
-access plus "Add to Home Screen" as a standalone app:
+`dist/` is a fully static site — host it anywhere with HTTPS for camera access
+and "Add to Home Screen":
 
-- **Netlify / Vercel / Cloudflare Pages** — drag-and-drop `dist/`, or point it
-  at this repo (build command `npm run build`, output dir `dist`).
-- **GitHub Pages** — publish the `dist/` contents. The app uses relative asset
-  paths (`base: "./"`), so it works from a project subpath too.
+- **Netlify / Vercel / Cloudflare Pages** — drag‑and‑drop `dist/`, or point at
+  this repo (build `npm run build`, output `dist`).
+- **GitHub Pages** — publish `dist/`. Assets use relative paths (`base: "./"`),
+  so a project subpath works too.
 
-On your phone, open the deployed URL and choose **Add to Home Screen** to run it
+On your phone, open the deployed URL → **Add to Home Screen** to run it
 fullscreen like a native app.
 
 ## Tech
 
-- Vite + React + TypeScript, no UI framework.
-- Charts and the contribution grid are hand-rolled SVG/CSS (no chart library).
-- Storage: a tiny IndexedDB wrapper in `src/lib/db.ts`.
-- Camera: the native `getUserMedia` API; the ghost overlay is just your last
-  saved photo drawn over the live video.
+- **Vite + React + TypeScript**, no UI framework and no chart/animation library.
+- Charts, the contribution grid, gestures (zoom/pan, drag‑reorder), and the
+  frosted‑glass design are all hand‑rolled with **SVG + CSS**.
+- Storage is a small **IndexedDB** wrapper (`src/lib/db.ts`); the camera uses the
+  native `getUserMedia` API and the ghost overlay is just your last photo drawn
+  over the live video.
 
 ## Project layout
 
 ```
 src/
-  App.tsx                 app shell, tab navigation, data loading
+  App.tsx                 app shell, 5-tab navigation, data loading
   lib/
-    db.ts                 IndexedDB storage (incl. wallpaper) + backup/restore
+    db.ts                 IndexedDB storage + reorder/backup/wipe helpers
     dates.ts              local-day helpers
-    image.ts              downscale picked photos before storing
-    quotes.ts             daily motivational quote set + day picker
+    image.ts              downscale picked photos/wallpaper before storing
+    quotes.ts             daily quote set (philosophy / psychology / arts)
+    useReorder.ts         long-press drag-to-reorder hook (lists + grids)
   components/
-    Countdown.tsx         days-remaining screen
-    PhotoCapture.tsx      camera, ghost overlay, gallery, slideshow
-    Weight.tsx            weight entry + SVG trend chart
-    Habits.tsx            daily checklist + GitHub-style heatmap
+    Countdown.tsx         days-left ring + daily quote
+    PhotoCapture.tsx      camera (ghost + timer + mirror), gallery, slideshow
+    Weight.tsx            weight entry + zoomable, smoothed trend chart
+    Habits.tsx            today checklist + aggregated consistency grid
     PeriodPicker.tsx      start/end dates + typed length in days
     WallpaperPicker.tsx   personal background photo picker
     Setup.tsx             first-run onboarding
-    Settings.tsx          edit period, background, export/restore backup
+    Settings.tsx          period, background, backup, delete-all
     icons.tsx             inline SVG icons
 ```
+
+---
+
+*v1 · local-first · built with Claude Code*
