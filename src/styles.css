@@ -909,6 +909,16 @@ input[type="range"] {
   color: var(--on-prominent);
 }
 
+/* Full-width segmented control (sub-tabs) */
+.seg.seg-full {
+  display: flex;
+}
+
+.seg.seg-full .seg-btn {
+  flex: 1;
+  text-align: center;
+}
+
 .zoom-box {
   cursor: grab;
   user-select: none;
@@ -976,19 +986,12 @@ input[type="range"] {
   flex: 0 0 auto;
 }
 
-/* Aggregated habit grid: legend + pager arrows, one colored row per habit */
-.hgrid-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
+/* Aggregated habit grid: legend + a horizontally draggable strip of days */
 .hgrid-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 14px;
+  margin-bottom: 14px;
 }
 
 .hgrid-legend-item {
@@ -1007,57 +1010,45 @@ input[type="range"] {
   flex: 0 0 auto;
 }
 
-.hgrid-nav {
-  display: flex;
-  gap: 6px;
-  flex: 0 0 auto;
+.hgrid-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scrollbar-width: none;
 }
 
-.hgrid-nav button {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  border: 1px solid var(--hairline);
-  background: var(--glass-input);
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
+.hgrid-scroll::-webkit-scrollbar {
+  display: none;
 }
 
-.hgrid-nav button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
+.hgrid-scroll:active {
+  cursor: grabbing;
 }
 
 .hgrid-rows {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
+  width: max-content;
 }
 
 .hgrid-row {
   display: flex;
-  gap: 6px;
+  gap: 5px;
 }
 
-.hgrid-cell {
-  flex: 1 1 0;
-  min-width: 0;
+.gcell {
+  width: 15px;
   height: 17px;
+  flex: 0 0 auto;
   border-radius: 5px;
   border: 1.5px solid transparent;
-  transition: background 0.15s;
 }
 
-.hgrid-cell.today {
-  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55);
-}
-
-.hgrid-cell.pad {
-  border-color: transparent !important;
+.gcell.today {
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.7);
 }
 
 .hgrid-foot {

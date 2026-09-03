@@ -22,6 +22,7 @@ export default function PhotoCapture({
   const [error, setError] = useState<string | null>(null);
   const [ghost, setGhost] = useState(0.4); // ghost overlay opacity
   const [slideshow, setSlideshow] = useState(false);
+  const [pane, setPane] = useState<"camera" | "gallery">("camera");
 
   // Mirror (selfie flip). On by default (the usual selfie feel); flip icon
   // toggles it since the "right" orientation varies by device. Persisted.
@@ -107,11 +108,12 @@ export default function PhotoCapture({
     setReady(false);
   }
 
+  // Only run the camera while the Camera pane is showing.
   useEffect(() => {
-    start();
+    if (pane === "camera") start();
     return stop;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pane]);
 
   async function capture() {
     const v = videoRef.current;
@@ -164,12 +166,26 @@ export default function PhotoCapture({
 
   return (
     <div className="screen">
-      <h1>Progress photos</h1>
-      <p className="sub">
-        Line up with the faded ghost of your last shot so every photo matches —
-        perfect for a compilation.
-      </p>
+      <div className="row" style={{ justifyContent: "space-between", marginBottom: 14 }}>
+        <h1 style={{ margin: 0 }}>Photos</h1>
+        <div className="seg" role="group" aria-label="Photos view">
+          <button
+            className={`seg-btn${pane === "camera" ? " active" : ""}`}
+            onClick={() => setPane("camera")}
+          >
+            Camera
+          </button>
+          <button
+            className={`seg-btn${pane === "gallery" ? " active" : ""}`}
+            onClick={() => setPane("gallery")}
+          >
+            Gallery · {photos.length}
+          </button>
+        </div>
+      </div>
 
+      {pane === "camera" ? (
+       <>
       <div className="cam-wrap">
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video ref={videoRef} playsInline muted className={mirror ? "mirror" : undefined} />
@@ -255,17 +271,18 @@ export default function PhotoCapture({
             : "Tap to capture"}
         </p>
       </div>
-
-      <div className="row" style={{ justifyContent: "space-between", marginTop: 24 }}>
-        <h2 style={{ margin: 0 }}>Gallery · {photos.length}</h2>
-        {photos.length > 1 && (
+        </>
+      ) : (
+        <>
+      {photos.length > 1 && (
+        <div className="row" style={{ justifyContent: "flex-end", marginBottom: 10 }}>
           <button className="btn ghost" onClick={() => setSlideshow(true)}>
             <span className="row" style={{ gap: 6 }}>
               <IconPlay style={{ width: 16, height: 16 }} /> Play
             </span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {photos.length === 0 ? (
         <div className="empty">
@@ -286,6 +303,8 @@ export default function PhotoCapture({
         <p className="hint" style={{ display: "flex", gap: 6, alignItems: "center" }}>
           <IconTrash style={{ width: 14, height: 14 }} /> Tap a photo to delete it.
         </p>
+      )}
+        </>
       )}
 
       {slideshow && (

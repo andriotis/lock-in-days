@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Config, DayLog, Habit } from "../lib/db";
 import { deleteHabit, getLog, putHabit, putLog } from "../lib/db";
 import {
@@ -32,6 +32,7 @@ export default function Habits({
 }) {
   const [manage, setManage] = useState(false);
   const [newName, setNewName] = useState("");
+  const [pane, setPane] = useState<"today" | "consistency">("today");
 
   const today = todayKey();
   const logByDate = useMemo(() => {
@@ -89,7 +90,23 @@ export default function Habits({
           {manage ? "Done" : "Edit"}
         </button>
       </div>
-      <p className="sub">Check in every day. Keep the squares green.</p>
+
+      {habits.length > 0 && !manage && (
+        <div className="seg seg-full" role="group" aria-label="Habits view" style={{ margin: "12px 0 14px" }}>
+          <button
+            className={`seg-btn${pane === "today" ? " active" : ""}`}
+            onClick={() => setPane("today")}
+          >
+            Today
+          </button>
+          <button
+            className={`seg-btn${pane === "consistency" ? " active" : ""}`}
+            onClick={() => setPane("consistency")}
+          >
+            Grid
+          </button>
+        </div>
+      )}
 
       {habits.length === 0 && !manage && (
         <div className="empty">
@@ -103,9 +120,9 @@ export default function Habits({
       )}
 
       {/* Today's checklist */}
-      {habits.length > 0 && !manage && (
+      {habits.length > 0 && !manage && pane === "today" && (
         <>
-          <h2>Today · {prettyDate(today)}</h2>
+          <p className="sub" style={{ margin: "0 0 10px" }}>{prettyDate(today)}</p>
           <div className="check-list">
             {habits.map((h) => {
               const done = !!logByDate.get(today)?.done[h.id];
@@ -129,10 +146,11 @@ export default function Habits({
               );
             })}
           </div>
-
-          <h2>Consistency</h2>
-          <HabitMatrix habits={habits} config={config} logByDate={logByDate} />
         </>
+      )}
+
+      {habits.length > 0 && !manage && pane === "consistency" && (
+        <HabitMatrix habits={habits} config={config} logByDate={logByDate} />
       )}
 
       {/* Manage view */}
@@ -172,12 +190,10 @@ export default function Habits({
   );
 }
 
-const PAGE_DAYS = 14; // days shown per page; arrows move between pages
-
 /**
  * A single aggregated grid: one row per habit, each in its own color. A legend
- * names the habits, and the ‹ › arrows page through the period a fortnight at a
- * time so the cells stay large and fill the width — no scrolling.
+ * names the habits; the strip of days scrolls horizontally — drag (or swipe) to
+ * move forward and backward through the period. Opens scrolled to today.
  */
 function HabitMatrix({
   habits,
@@ -194,97 +210,83 @@ function HabitMatrix({
   const end = fromDayKey(config.endDate);
 
   const totalDays = Math.max(1, daysBetween(start, end) + 1);
-  const pageCount = Math.ceil(totalDays / PAGE_DAYS);
-
-  // Default to the page that contains today (the most relevant one).
-  const todayIdx = Math.min(totalDays - 1, Math.max(0, daysBetween(start, today)));
-  const [page, setPage] = useState(Math.floor(todayIdx / PAGE_DAYS));
-  const safePage = Math.min(page, pageCount - 1);
-
-  // Build this page's days, padding the last page so cell widths stay uniform.
-  const pageDays = Array.from({ length: PAGE_DAYS }, (_, i) => {
-    const idx = safePage * PAGE_DAYS + i;
-    if (idx >= totalDays) return null;
-    const d = addDays(start, idx);
+  const days = Array.from({ length: totalDays }, (_, i) => {
+    const d = addDays(start, i);
     const key = toDayKey(d);
     return { key, future: daysBetween(today, d) > 0, isToday: key === todayK };
   });
 
-  const realDays = pageDays.filter(Boolean) as {
-    key: string;
-    future: boolean;
-    isToday: boolean;
-  }[];
-  const rangeLabel =
-    realDays.length > 0
-      ? `${shortDate(realDays[0].key)} – ${shortDate(realDays[realDays.length - 1].key)}`
-      : "";
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ x: number; left: number } | null>(null);
+
+  // Open scrolled to the most recent day.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, [totalDays, habits.length]);
+
+  // Mouse click-drag to pan (touch swipes scroll natively).
+  function onPointerDown(e: React.PointerEvent) {
+    if (e.pointerType !== "mouse") return;
+    drag.current = { x: e.clientX, left: scrollRef.current!.scrollLeft };
+    scrollRef.current!.setPointerCapture?.(e.pointerId);
+  }
+  function onPointerMove(e: React.PointerEvent) {
+    if (!drag.current) return;
+    scrollRef.current!.scrollLeft = drag.current.left - (e.clientX - drag.current.x);
+  }
+  function endDrag() {
+    drag.current = null;
+  }
 
   return (
     <div className="card hgrid">
-      <div className="hgrid-head">
-        <div className="hgrid-legend">
-          {habits.map((h) => (
-            <span className="hgrid-legend-item" key={h.id}>
-              <span className="hgrid-chip" style={{ borderColor: h.color }} />
-              {h.name}
-            </span>
-          ))}
-        </div>
-        <div className="hgrid-nav">
-          <button
-            aria-label="Earlier"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={safePage <= 0}
-          >
-            <Chevron dir="left" />
-          </button>
-          <button
-            aria-label="Later"
-            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
-            disabled={safePage >= pageCount - 1}
-          >
-            <Chevron dir="right" />
-          </button>
-        </div>
-      </div>
-
-      <div className="hgrid-rows">
+      <div className="hgrid-legend">
         {habits.map((h) => (
-          <div className="hgrid-row" key={h.id}>
-            {pageDays.map((d, i) => {
-              if (!d) return <i key={`pad-${i}`} className="hgrid-cell pad" />;
-              const done = !!logByDate.get(d.key)?.done[h.id];
-              return (
-                <i
-                  key={d.key}
-                  className={`hgrid-cell${d.isToday ? " today" : ""}`}
-                  title={`${h.name} · ${d.key}`}
-                  style={{
-                    background: done ? h.color : "transparent",
-                    borderColor: done
-                      ? h.color
-                      : d.future
-                      ? h.color + "33"
-                      : h.color + "aa",
-                  }}
-                />
-              );
-            })}
-          </div>
+          <span className="hgrid-legend-item" key={h.id}>
+            <span className="hgrid-chip" style={{ borderColor: h.color }} />
+            {h.name}
+          </span>
         ))}
       </div>
 
-      <div className="hgrid-foot">{rangeLabel}</div>
-    </div>
-  );
-}
+      <div
+        className="hgrid-scroll"
+        ref={scrollRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
+        <div className="hgrid-rows">
+          {habits.map((h) => (
+            <div className="hgrid-row" key={h.id}>
+              {days.map((d) => {
+                const done = !!logByDate.get(d.key)?.done[h.id];
+                return (
+                  <i
+                    key={d.key}
+                    className={`gcell${d.isToday ? " today" : ""}`}
+                    title={`${h.name} · ${d.key}`}
+                    style={{
+                      background: done ? h.color : "transparent",
+                      borderColor: done
+                        ? h.color
+                        : d.future
+                        ? h.color + "33"
+                        : h.color + "aa",
+                    }}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
 
-function Chevron({ dir }: { dir: "left" | "right" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}
-      strokeLinecap="round" strokeLinejoin="round" width={18} height={18}>
-      {dir === "left" ? <path d="M15 6l-6 6 6 6" /> : <path d="M9 6l6 6-6 6" />}
-    </svg>
+      <div className="hgrid-foot">
+        {shortDate(config.startDate)} – {shortDate(config.endDate)} · drag to move · today outlined
+      </div>
+    </div>
   );
 }
